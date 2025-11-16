@@ -1,0 +1,31 @@
+# Ignorar archivos de Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar configuraciones de IDEs (VSCode, PyCharm, WebStorm)
+.vscode/
+.idea/
+
+# --- Backend (Node.js) ---
+
+# Ignorar dependencias (se instalan con 'npm install')
+/backend/node_modules/
+
+
+/backend/.env
+
+# Ignorar logs de npm
+npm-debug.log*
+yarn-error.log
+
+# --- Frontend (Python) ---
+
+# Ignorar el entorno virtual
+/frontend/venv/
+/frontend/.venv/
+.venv/
+venv/
+
+# Ignorar caché de Python
+/frontend/__pycache__/
+*.pyc

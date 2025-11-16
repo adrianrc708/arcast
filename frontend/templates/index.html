@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reseñas de Películas</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 10px 0; }
+        a { font-size: 1.2em; text-decoration: none; color: #007bff; }
+        .form-new { background: #f4f4f4; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Mini Plataforma de Reseñas</h1>
+
+    <div class="form-new">
+        <h3>Agregar Nueva Película</h3>
+        <form action="{{ url_for('add_movie') }}" method="POST">
+            <label for="title">Título:</label>
+            <input type="text" id="title" name="title" required>
+            <button type="submit">Agregar Película</button>
+        </form>
+    </div>
+
+    <h2>Películas Disponibles (Desde MongoDB)</h2>
+    <ul>
+        {% for movie in movies %}
+            <li>
+                <a href="{{ url_for('movie_detail', movie_id=movie._id) }}">
+                    {{ movie.title }}
+                </a>
+            </li>
+        {% else %}
+            <li>No hay películas en la base de datos. ¡Agrega una!</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
