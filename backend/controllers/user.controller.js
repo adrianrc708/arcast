@@ -66,18 +66,41 @@ exports.addToWatchlist = async (req, res) => {
     }
 };
 
-// --- WATCHLIST: Obtener ---
+// --- WATCHLIST: Obtener (Versión "Búsqueda Manual" solicitada) ---
 exports.getWatchlist = async (req, res) => {
     try {
-        // Populate funciona gracias a que 'kind' ahora es correcto ('Movie' o 'TVShow')
-        const user = await User.findById(req.user.id).populate('watchlist.item');
-
+        // 1. Obtenemos el usuario SIN populate para tener los IDs crudos
+        const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado.' });
 
-        // Filtramos nulos por seguridad
-        const cleanWatchlist = user.watchlist.filter(w => w.item != null);
+        const finalWatchlist = [];
 
-        res.json({ watchlist: cleanWatchlist });
+        // 2. Recorremos cada item de la watchlist manualmente
+        for (const entry of user.watchlist) {
+            const itemId = entry.item; // Este es el ID (ej: 691ea0...)
+
+            // A. Intentamos buscarlo en PELÍCULAS
+            let foundData = await Movie.findById(itemId);
+            let realKind = 'Movie';
+
+            // B. Si no existe, lo buscamos en SERIES
+            if (!foundData) {
+                foundData = await TVShow.findById(itemId);
+                realKind = 'TVShow';
+            }
+
+            // C. Si encontramos datos (sea peli o serie), lo agregamos a la lista final
+            if (foundData) {
+                finalWatchlist.push({
+                    _id: entry._id, // ID de la entrada en la lista
+                    kind: realKind, // El tipo real que encontramos
+                    item: foundData // El objeto completo con titulo, foto, etc.
+                });
+            }
+            // Si foundData sigue siendo null, significa que el contenido se borró de la BD, así que lo ignoramos.
+        }
+
+        res.json({ watchlist: finalWatchlist });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
