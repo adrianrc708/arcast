@@ -12,10 +12,11 @@ const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
 const GENRES_TO_FETCH = [28, 35, 27, 18, 878, 16];
 
-// --- HELPERS DE LÓGICA DE NEGOCIO (Iguales al controller) ---
+// --- HELPERS ---
 const findTrailer = (videos) => {
     if (!videos || !videos.results) return null;
     let v = videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+    if (!v) v = videos.results.find(v => v.type === 'Teaser' && v.site === 'YouTube');
     if (!v) v = videos.results.find(v => v.site === 'YouTube');
     return v ? v.key : null;
 };
@@ -28,25 +29,24 @@ const isInTheaters = (releaseDateStr) => {
     return diffDays <= 60;
 };
 
-const getWatchProvider = (providers, releaseDate) => {
+const getWatchProviders = (providers, releaseDate) => {
+    let results = [];
     if (providers && providers.results && providers.results.PE && providers.results.PE.flatrate) {
-        const provider = providers.results.PE.flatrate[0];
-        return {
-            name: provider.provider_name,
-            link: providers.results.PE.link,
-            logo: `${TMDB_IMG_URL}${provider.logo_path}`
-        };
+        results = providers.results.PE.flatrate.map(p => ({
+            name: p.provider_name,
+            logo: `${TMDB_IMG_URL}${p.logo_path}`,
+            link: providers.results.PE.link
+        }));
     }
-    if (isInTheaters(releaseDate)) {
-        return {
+    if (results.length === 0 && isInTheaters(releaseDate)) {
+        results.push({
             name: 'Cineplanet / Cinemark',
-            link: 'https://www.cineplanet.com.pe/',
-            logo: 'https://img.icons8.com/color/48/cinema-.png' // Icono genérico si no es streaming
-        };
+            logo: 'https://img.icons8.com/color/48/cinema-.png',
+            link: 'https://www.cineplanet.com.pe/'
+        });
     }
-    return { name: null, link: null, logo: null };
+    return results;
 };
-// -----------------------------------------------------------
 
 async function importMoviesByGenre(genreId) {
     try {
@@ -64,7 +64,6 @@ async function importMoviesByGenre(genreId) {
         for (const basicData of response.data.results) {
             const existing = await Movie.findOne({ tmdbId: basicData.id });
             if (!existing) {
-                // Pedimos providers en el seed también
                 const detailRes = await axios.get(`${TMDB_BASE_URL}/movie/${basicData.id}`, {
                     params: {
                         api_key: TMDB_API_KEY,
@@ -74,7 +73,7 @@ async function importMoviesByGenre(genreId) {
                     }
                 });
                 const d = detailRes.data;
-                const providerInfo = getWatchProvider(d['watch/providers'], d.release_date);
+                const platforms = getWatchProviders(d['watch/providers'], d.release_date);
 
                 const movie = new Movie({
                     title: d.title,
@@ -88,9 +87,8 @@ async function importMoviesByGenre(genreId) {
                     trailerKey: findTrailer(d.videos),
                     duration: d.runtime,
                     languages: d.spoken_languages.map(l => l.name),
-                    watchLink: providerInfo.link,
-                    platformName: providerInfo.name,
-                    platformLogo: providerInfo.logo
+                    platforms: platforms,
+                    watchLink: platforms.length > 0 ? platforms[0].link : null
                 });
                 await movie.save();
                 process.stdout.write('.');
@@ -120,7 +118,7 @@ async function importPopularTVShows() {
                     }
                 });
                 const d = detailRes.data;
-                const providerInfo = getWatchProvider(d['watch/providers'], d.first_air_date);
+                const platforms = getWatchProviders(d['watch/providers'], d.first_air_date);
 
                 const show = new TVShow({
                     name: d.name,
@@ -134,9 +132,8 @@ async function importPopularTVShows() {
                     trailerKey: findTrailer(d.videos),
                     seasons: d.number_of_seasons,
                     languages: d.spoken_languages.map(l => l.name),
-                    watchLink: providerInfo.link,
-                    platformName: providerInfo.name,
-                    platformLogo: providerInfo.logo
+                    platforms: platforms,
+                    watchLink: platforms.length > 0 ? platforms[0].link : null
                 });
                 await show.save();
                 process.stdout.write('.');

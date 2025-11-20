@@ -5,20 +5,23 @@ const TVShowSchema = new Schema({
     name: { type: String, required: true },
     overview: { type: String },
     posterUrl: { type: String },
-    backdropUrl: { type: String }, // NUEVO
+    backdropUrl: { type: String },
     tmdbId: { type: String, unique: true, required: true },
     firstAirDate: { type: String },
     genres: [{ type: String }],
     trailerKey: { type: String },
     voteAverage: { type: Number },
-
-    // NUEVOS CAMPOS
-    seasons: { type: Number }, // Cantidad de temporadas
+    seasons: { type: Number },
     languages: [{ type: String }],
 
-    watchLink: { type: String },
-    platformName: { type: String },
-    platformLogo: { type: String }
+    // CAMBIO: Array de plataformas
+    platforms: [{
+        name: String,
+        logo: String,
+        link: String
+    }],
+
+    watchLink: { type: String }
 });
 
 module.exports = mongoose.model('TVShow', TVShowSchema);

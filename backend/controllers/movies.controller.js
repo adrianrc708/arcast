@@ -11,26 +11,42 @@ exports.createMovie = async (req, res) => {
     }
 };
 
-// GET /api/movies -> listar con filtros
+// GET /api/movies -> listar con filtros, búsqueda y aleatoriedad
 exports.getAllMovies = async (req, res) => {
     try {
-        const { genre, platform, sort } = req.query;
+        const { genre, platform, sort, search } = req.query;
         let query = {};
+
+        // Filtro Buscador (por título)
+        if (search) {
+            query.title = { $regex: search, $options: 'i' };
+        }
 
         // Filtro Género
         if (genre && genre !== 'Todas') {
             query.genres = genre;
         }
-        // Filtro Plataforma (Búsqueda parcial insensible a mayúsculas)
+
+        // Filtro Plataforma (Busca dentro del array de objetos platforms)
         if (platform && platform !== 'Todas') {
-            query.platformName = { $regex: platform, $options: 'i' };
+            query['platforms.name'] = { $regex: platform, $options: 'i' };
         }
 
-        let sortOption = { _id: -1 }; // Default recientes
-        if (sort === 'rating') sortOption = { voteAverage: -1 };
-        if (sort === 'newest') sortOption = { releaseDate: -1 };
+        let movies;
 
-        const movies = await Movie.find(query).sort(sortOption);
+        // Si NO hay criterios de ordenamiento explícitos, devolvemos aleatorio para el Home
+        if (!sort && !search) {
+            movies = await Movie.find(query);
+            // Mezcla aleatoria en Javascript
+            movies = movies.sort(() => Math.random() - 0.5);
+        } else {
+            let sortOption = { _id: -1 }; // Default recientes
+            if (sort === 'rating') sortOption = { voteAverage: -1 };
+            if (sort === 'newest') sortOption = { releaseDate: -1 };
+
+            movies = await Movie.find(query).sort(sortOption);
+        }
+
         res.json(movies);
     } catch (err) {
         res.status(500).json({ message: err.message });

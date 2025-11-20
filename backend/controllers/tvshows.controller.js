@@ -1,28 +1,36 @@
 const TVShow = require('../models/tvshow.model');
 
-// GET /api/tvshows -> listar con filtros
+// GET /api/tvshows -> listar con filtros y aleatoriedad
 exports.getAllTVShows = async (req, res) => {
     try {
-        const { genre, platform, sort } = req.query;
+        const { genre, platform, sort, search } = req.query;
         let query = {};
 
-        // Filtro por Género
+        if (search) {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
         if (genre && genre !== 'Todas') {
             query.genres = genre;
         }
 
-        // Filtro por Plataforma (Búsqueda parcial insensible a mayúsculas)
         if (platform && platform !== 'Todas') {
-            query.platformName = { $regex: platform, $options: 'i' };
+            query['platforms.name'] = { $regex: platform, $options: 'i' };
         }
 
-        let sortOption = { _id: -1 }; // Por defecto: más recientes agregadas
+        let shows;
 
-        // Filtro de Ordenamiento
-        if (sort === 'rating') sortOption = { voteAverage: -1 }; // Mayor puntaje primero
-        if (sort === 'newest') sortOption = { firstAirDate: -1 }; // Estreno más reciente (campo específico de TV)
+        if (!sort && !search) {
+            shows = await TVShow.find(query);
+            shows = shows.sort(() => Math.random() - 0.5);
+        } else {
+            let sortOption = { _id: -1 };
+            if (sort === 'rating') sortOption = { voteAverage: -1 };
+            if (sort === 'newest') sortOption = { firstAirDate: -1 };
 
-        const shows = await TVShow.find(query).sort(sortOption);
+            shows = await TVShow.find(query).sort(sortOption);
+        }
+
         res.json(shows);
     } catch (err) {
         res.status(500).json({ message: err.message });

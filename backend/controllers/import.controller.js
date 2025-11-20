@@ -5,56 +5,51 @@ const TVShow = require('../models/tvshow.model');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG_URL = 'https://image.tmdb.org/t/p/w500';
-const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original'; // Imagen HD
+const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
 // Helper: Buscar Video
 const findTrailer = (videos) => {
     if (!videos || !videos.results) return null;
     let v = videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-    if (!v) v = videos.results.find(v => v.site === 'YouTube'); // Fallback a cualquier video
+    if (!v) v = videos.results.find(v => v.type === 'Teaser' && v.site === 'YouTube');
+    if (!v) v = videos.results.find(v => v.site === 'YouTube');
     return v ? v.key : null;
 };
 
-// Helper: ¿Está en cartelera? (Estreno hace menos de 2 meses)
+// Helper: ¿Está en cartelera?
 const isInTheaters = (releaseDateStr) => {
     if (!releaseDateStr) return false;
     const release = new Date(releaseDateStr);
     const now = new Date();
     const diffTime = Math.abs(now - release);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 60; // 60 días en cartelera aprox
+    return diffDays <= 60;
 };
 
-// ...
-const getWatchProvider = (providers, releaseDate, title) => { // Agregamos 'title'
-    // 1. Buscar Streaming
+// Helper Mejorado: Obtener TODAS las plataformas
+const getWatchProviders = (providers, releaseDate) => {
+    let results = [];
+
+    // 1. Streaming (Flatrate) en Perú (PE)
     if (providers && providers.results && providers.results.PE && providers.results.PE.flatrate) {
-        const provider = providers.results.PE.flatrate[0];
-        const providerName = provider.provider_name;
-
-        // GENERADOR DE LINKS DIRECTOS (Truco de búsqueda)
-        let directLink = providers.results.PE.link; // Fallback a TMDB
-
-        if (providerName.includes('Netflix')) directLink = `https://www.netflix.com/search?q=${encodeURIComponent(title)}`;
-        else if (providerName.includes('Amazon')) directLink = `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`;
-        else if (providerName.includes('Disney')) directLink = `https://www.disneyplus.com/search?q=${encodeURIComponent(title)}`;
-        else if (providerName.includes('HBO') || providerName.includes('Max')) directLink = `https://play.max.com/search?q=${encodeURIComponent(title)}`;
-        else if (providerName.includes('Apple')) directLink = `https://tv.apple.com/search?term=${encodeURIComponent(title)}`;
-
-        return {
-            name: providerName,
-            link: directLink,
-            logo: `${TMDB_IMG_URL}${provider.logo_path}`,
-            type: 'streaming'
-        };
+        results = providers.results.PE.flatrate.map(p => ({
+            name: p.provider_name,
+            logo: `${TMDB_IMG_URL}${p.logo_path}`,
+            link: providers.results.PE.link // Link genérico de TMDB a la plataforma
+        }));
     }
-    // ... (resto de la función para cines sigue igual)
-    // ...
-};
 
-// IMPORTANTE: Debes pasar el 'title' (o 'name' para series) al llamar a esta función
-// En importMovie:  const providerInfo = getWatchProvider(data['watch/providers'], data.release_date, data.title);
-// En importTVShow: const providerInfo = getWatchProvider(data['watch/providers'], data.first_air_date, data.name);
+    // 2. Cines (Si es reciente y no hay streaming)
+    if (results.length === 0 && isInTheaters(releaseDate)) {
+        results.push({
+            name: 'Cineplanet / Cinemark',
+            logo: 'https://img.icons8.com/color/48/cinema-.png', // Icono genérico
+            link: 'https://www.cineplanet.com.pe/'
+        });
+    }
+
+    return results;
+};
 
 exports.importMovie = async (req, res) => {
     const { title } = req.body;
@@ -76,7 +71,7 @@ exports.importMovie = async (req, res) => {
             }
         });
         const data = details.data;
-        const providerInfo = getWatchProvider(data['watch/providers'], data.release_date);
+        const platforms = getWatchProviders(data['watch/providers'], data.release_date);
 
         let movie = await Movie.findOne({ tmdbId: data.id });
         if (movie) return res.status(400).json({ message: 'Ya existe' });
@@ -92,10 +87,9 @@ exports.importMovie = async (req, res) => {
             genres: data.genres.map(g => g.name),
             trailerKey: findTrailer(data.videos),
             duration: data.runtime,
-            languages: data.spoken_languages.map(l => l.name), // Nombre del idioma
-            watchLink: providerInfo.link,
-            platformName: providerInfo.name,
-            platformLogo: providerInfo.logo
+            languages: data.spoken_languages.map(l => l.name),
+            platforms: platforms,
+            watchLink: platforms.length > 0 ? platforms[0].link : null
         });
 
         await movie.save();
@@ -126,7 +120,7 @@ exports.importTVShow = async (req, res) => {
             }
         });
         const data = details.data;
-        const providerInfo = getWatchProvider(data['watch/providers'], data.first_air_date);
+        const platforms = getWatchProviders(data['watch/providers'], data.first_air_date);
 
         let show = await TVShow.findOne({ tmdbId: data.id });
         if (show) return res.status(400).json({ message: 'Ya existe' });
@@ -143,9 +137,8 @@ exports.importTVShow = async (req, res) => {
             trailerKey: findTrailer(data.videos),
             seasons: data.number_of_seasons,
             languages: data.spoken_languages.map(l => l.name),
-            watchLink: providerInfo.link,
-            platformName: providerInfo.name,
-            platformLogo: providerInfo.logo
+            platforms: platforms,
+            watchLink: platforms.length > 0 ? platforms[0].link : null
         });
 
         await show.save();
