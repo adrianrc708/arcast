@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import requests
 import os
-import random  # <--- IMPORTANTE: Para que cambie cada vez
+import random
 from functools import wraps
 
 app = Flask(__name__)
@@ -54,16 +54,15 @@ def index():
         if resp_mov.status_code == 200:
             movies = resp_mov.json()
 
-            # --- CARRUSEL ALEATORIO ---
-            # 1. Filtramos pelis que tengan imagen de fondo y buen rating
+            # --- CARRUSEL PRINCIPAL (HERO) ---
+            # Este sigue limitado a 5 para que no sea muy pesado
             candidates = [m for m in movies if m.get('voteAverage', 0) > 6.0 and m.get('backdropUrl')]
-            # 2. Las mezclamos al azar
             random.shuffle(candidates)
-            # 3. Tomamos las 5 primeras
             hero_movies = candidates[:5]
 
-            # Filtros de filas (Limitados a 5 para el diseño)
-            limit = 5
+            # --- FILAS DE GÉNEROS (Limitadas a 15 para permitir scroll) ---
+            limit = 15
+
             action_movies = [m for m in movies if 'Acción' in m.get('genres', [])][:limit]
             comedy_movies = [m for m in movies if 'Comedia' in m.get('genres', [])][:limit]
             horror_movies = [m for m in movies if 'Terror' in m.get('genres', [])][:limit]
@@ -71,13 +70,14 @@ def index():
             scifi_movies = [m for m in movies if 'Ciencia ficción' in m.get('genres', [])][:limit]
             anim_movies = [m for m in movies if 'Animación' in m.get('genres', [])][:limit]
 
-            # Top Rated (Ordenado por calidad)
+            # Top Rated (También limitado a 15)
             top_rated = sorted(movies, key=lambda x: x.get('voteAverage', 0), reverse=True)[:limit]
 
         # 2. Obtener Series
         resp_tv = requests.get(f"{BACKEND_API_URL}/tvshows")
         if resp_tv.status_code == 200:
-            tv_shows = resp_tv.json()
+            # Limitamos también las series a 15
+            tv_shows = resp_tv.json()[:15]
 
     except requests.exceptions.ConnectionError:
         flash("Error de conexión", "error")
@@ -85,7 +85,7 @@ def index():
     return render_template('index.html',
                            hero_movies=hero_movies,
                            top_rated=top_rated,
-                           tv_shows=tv_shows[:5],
+                           tv_shows=tv_shows,
                            action_movies=action_movies,
                            comedy_movies=comedy_movies,
                            horror_movies=horror_movies,

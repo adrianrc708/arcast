@@ -40,7 +40,6 @@
                 <div class="category-section">
                     <div class="row-header">
                         <h2 class="row-title">{{ title }}</h2>
-
                         {% if genre_filter %}
                             <a href="{{ url_for('view_all', category=category_type, genre=genre_filter) }}" class="view-all">VER TODO</a>
                         {% elif category_type == 'tvshows' %}
@@ -48,29 +47,35 @@
                         {% endif %}
                     </div>
 
-                    <div class="media-grid">
-                        {% for item in items %}
-                        <div class="media-card">
-                            <div class="poster-wrapper">
-                                <a href="{{ url_for('movie_detail', content_id=item._id) }}">
-                                    <img src="{{ item.posterUrl or 'https://via.placeholder.com/200x300?text=No+Image' }}" alt="{{ item.title or item.name }}">
-                                </a>
-                            </div>
-                            <div class="card-info">
-                                <h3>{{ item.title or item.name }}</h3>
-                                <div class="card-meta">
-                                    <span>{{ (item.releaseDate or item.firstAirDate)[:4] if (item.releaseDate or item.firstAirDate) else '' }}</span>
-                                    <span class="score">🍅 {{ (item.voteAverage * 10)|int }}%</span>
-                                </div>
+                    <div class="carousel-wrapper">
+                        <button class="carousel-btn prev hidden" onclick="scrollCarousel(this, -1)">❮</button>
 
-                                <form action="{{ url_for('add_to_watchlist') }}" method="POST">
-                                    <input type="hidden" name="movieId" value="{{ item._id }}">
-                                    <input type="hidden" name="contentType" value="{{ 'tv' if item.name else 'movie' }}">
-                                    <button type="submit" class="watchlist-btn-mini">+ Mi Lista</button>
-                                </form>
+                        <div class="carousel-track">
+                            {% for item in items %}
+                            <div class="media-card">
+                                <div class="poster-wrapper">
+                                    <a href="{{ url_for('movie_detail', content_id=item._id) }}">
+                                        <img src="{{ item.posterUrl or 'https://via.placeholder.com/200x300?text=No+Image' }}" alt="{{ item.title or item.name }}">
+                                    </a>
+                                </div>
+                                <div class="card-info">
+                                    <h3>{{ item.title or item.name }}</h3>
+                                    <div class="card-meta">
+                                        <span>{{ (item.releaseDate or item.firstAirDate)[:4] if (item.releaseDate or item.firstAirDate) else '' }}</span>
+                                        <span class="score">🍅 {{ (item.voteAverage * 10)|int }}%</span>
+                                    </div>
+
+                                    <form action="{{ url_for('add_to_watchlist') }}" method="POST">
+                                        <input type="hidden" name="movieId" value="{{ item._id }}">
+                                        <input type="hidden" name="contentType" value="{{ 'tv' if item.name else 'movie' }}">
+                                        <button type="submit" class="watchlist-btn-mini">+ Mi Lista</button>
+                                    </form>
+                                </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+
+                        <button class="carousel-btn next" onclick="scrollCarousel(this, 1)">❯</button>
                     </div>
                 </div>
                 {% endif %}
@@ -91,6 +96,7 @@
     </div>
 
     <script>
+        // -- LÓGICA DEL HERO SLIDER --
         let currentSlide = 0;
         const slides = document.querySelectorAll('.hero-slide');
         const dots = document.querySelectorAll('.dot');
@@ -100,7 +106,6 @@
         function showSlide(index) {
             slides.forEach(slide => slide.classList.remove('active'));
             dots.forEach(dot => dot.classList.remove('active'));
-
             if(slides[index]) slides[index].classList.add('active');
             if(dots[index]) dots[index].classList.add('active');
             currentSlide = index;
@@ -118,11 +123,40 @@
         }
 
         function startSlider() {
-            slideInterval = setInterval(nextSlide, 5000);
+            if(totalSlides > 0) slideInterval = setInterval(nextSlide, 5000);
+        }
+        startSlider();
+
+
+        // -- LÓGICA DE LOS CARRUSELES --
+        function scrollCarousel(btn, direction) {
+            const wrapper = btn.closest('.carousel-wrapper');
+            const track = wrapper.querySelector('.carousel-track');
+            const scrollAmount = 300; // Cantidad de desplazamiento
+
+            track.scrollBy({
+                left: scrollAmount * direction,
+                behavior: 'smooth'
+            });
         }
 
-        if (totalSlides > 0) {
-            startSlider();
+        // Mostrar/Ocultar flechas según scroll
+        document.querySelectorAll('.carousel-track').forEach(track => {
+            track.addEventListener('scroll', () => checkArrows(track));
+            checkArrows(track); // Chequeo inicial
+        });
+
+        function checkArrows(track) {
+            const wrapper = track.parentElement;
+            const prevBtn = wrapper.querySelector('.prev');
+            const nextBtn = wrapper.querySelector('.next');
+
+            // Tolerancia de 2px para errores de redondeo
+            if (track.scrollLeft <= 0) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
+
+            if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 2) nextBtn.classList.add('hidden');
+            else nextBtn.classList.remove('hidden');
         }
     </script>
 {% endblock %}

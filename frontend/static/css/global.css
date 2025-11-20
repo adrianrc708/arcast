@@ -1,10 +1,10 @@
 :root {
-    --bg-main: #0f1014; /* Fondo muy oscuro, casi negro */
-    --bg-card: #1b1d24; /* Fondo de tarjetas */
+    --bg-main: #0f1014;
+    --bg-card: #1b1d24;
     --bg-hover: #252830;
     --text-main: #ffffff;
     --text-muted: #8f9bb3;
-    --accent: #38bdf8; /* Azul eléctrico moderno (como en tu imagen mockup) */
+    --accent: #38bdf8;
     --border: #2e323b;
 }
 
@@ -51,32 +51,120 @@ nav { display: flex; gap: 25px; align-items: center; }
 }
 .nav-link:hover { color: var(--text-main); }
 
-/* Buscador en Header */
+/* --- BUSCADOR SUPER MODERNO (Expandible) --- */
+.search-container {
+    position: relative;
+    width: 280px; /* Ancho inicial */
+    transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    z-index: 2000;
+}
+
+.search-container:focus-within {
+    width: 450px; /* Se expande al enfocar */
+}
+
 .search-bar {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 15px;
+    background: rgba(26, 26, 29, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50px;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
-    width: 300px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
+
+.search-bar:focus-within {
+    border-color: var(--accent);
+    background: rgba(26, 26, 29, 0.95);
+    box-shadow: 0 8px 30px rgba(56, 189, 248, 0.2);
+    transform: translateY(-2px);
+}
+
 .search-bar input {
     background: transparent;
     border: none;
     color: white;
     width: 100%;
     outline: none;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    margin-left: 12px;
+    font-weight: 500;
 }
+.search-bar input::placeholder { color: #666; transition: color 0.3s; }
+.search-bar:focus-within input::placeholder { color: #aaa; }
+
 .search-bar button {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
+    font-size: 1.2rem;
+    transition: color 0.3s;
+    padding: 0;
+}
+.search-bar:focus-within button { color: var(--accent); }
+
+/* --- RESULTADOS FLOTANTES (Glassmorphism) --- */
+.search-results {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 0;
+    width: 100%;
+    background: rgba(20, 20, 22, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    z-index: 2001;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    padding: 8px 0;
+    opacity: 0; transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* Botones */
+.search-results.active {
+    display: flex;
+    opacity: 1; transform: translateY(0);
+}
+
+.result-item {
+    display: flex; align-items: center; gap: 15px;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.result-item:last-child { border-bottom: none; }
+
+.result-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-left-color: var(--accent);
+}
+
+.result-poster {
+    width: 45px; height: 68px;
+    object-fit: cover; border-radius: 6px; background: #222;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.result-info { display: flex; flex-direction: column; overflow: hidden; }
+
+.result-title {
+    font-size: 1rem; font-weight: 600; color: white;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.result-meta { font-size: 0.85rem; color: #8f9bb3; display: flex; align-items: center; gap: 8px; }
+
+.no-results { padding: 20px; text-align: center; color: #777; font-style: italic; }
+
+/* Botones Generales */
 .btn {
     padding: 8px 16px;
     border-radius: 6px;
@@ -84,10 +172,32 @@ nav { display: flex; gap: 25px; align-items: center; }
     font-size: 0.9rem;
     cursor: pointer;
     border: none;
+    display: inline-block;
 }
 .btn-primary { background: var(--accent); color: #000; }
 .btn-primary:hover { opacity: 0.9; }
 .btn-outline { border: 1px solid var(--border); color: var(--text-main); background: transparent; }
 .btn-outline:hover { background: var(--bg-hover); }
 
+/* Container Base */
 .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+/* --- AJUSTES DEL BOTÓN DE LUPA --- */
+.search-bar button.search-icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted); /* Gris por defecto */
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+/* Efecto al hacer foco en el input */
+.search-bar:focus-within .search-icon-btn {
+    color: var(--accent); /* Se pone azul/acento */
+    transform: scale(1.1); /* Crece un poquito */
+}
