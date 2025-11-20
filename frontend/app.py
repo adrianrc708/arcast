@@ -253,11 +253,21 @@ def update_account():
         headers = get_auth_headers()
         data = {"username": new_username}
         response = requests.put(f"{BACKEND_API_URL}/user/me", json=data, headers=headers)
+
         if response.status_code == 200:
             session['username'] = new_username
-            flash('Actualizado.', 'success')
-    except:
-        flash("Error al actualizar.", "error")
+            # CATEGORIA 'success' -> Borde Verde
+            flash('Perfil actualizado correctamente.', 'success')
+        else:
+            error_message = response.json().get('message', 'Error al actualizar.')
+            # CATEGORIA 'error' -> Borde Rojo
+            flash(f"Error: {error_message}", 'error')
+
+    except requests.exceptions.ConnectionError:
+        flash("No se pudo conectar con el servidor.", "error")
+    except Exception as e:
+        flash("Ocurrió un error inesperado.", "error")
+
     return redirect(url_for('account'))
 
 

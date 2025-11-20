@@ -20,7 +20,9 @@ body {
 a { text-decoration: none; color: inherit; transition: 0.2s; }
 ul { list-style: none; padding: 0; margin: 0; }
 
-/* HEADER ESTILO APP */
+/* =========================================
+   HEADER & NAVEGACIÓN
+   ========================================= */
 header {
     background-color: rgba(15, 16, 20, 0.95);
     padding: 15px 30px;
@@ -42,8 +44,8 @@ header {
     text-transform: uppercase;
 }
 
-/* Menú de Navegación */
 nav { display: flex; gap: 25px; align-items: center; }
+
 .nav-link {
     color: var(--text-muted);
     font-weight: 500;
@@ -51,7 +53,9 @@ nav { display: flex; gap: 25px; align-items: center; }
 }
 .nav-link:hover { color: var(--text-main); }
 
-/* --- BUSCADOR SUPER MODERNO (Expandible) --- */
+/* =========================================
+   BUSCADOR SUPER MODERNO (Expandible)
+   ========================================= */
 .search-container {
     position: relative;
     width: 280px; /* Ancho inicial */
@@ -95,16 +99,22 @@ nav { display: flex; gap: 25px; align-items: center; }
 .search-bar input::placeholder { color: #666; transition: color 0.3s; }
 .search-bar:focus-within input::placeholder { color: #aaa; }
 
-.search-bar button {
+/* Botón Lupa */
+.search-bar button.search-icon-btn {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 1.2rem;
-    transition: color 0.3s;
+    font-size: 1.1rem;
     padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.3s ease, transform 0.2s ease;
 }
-.search-bar:focus-within button { color: var(--accent); }
+
+.search-bar:focus-within .search-icon-btn {
+    color: var(--accent);
+    transform: scale(1.1);
+}
 
 /* --- RESULTADOS FLOTANTES (Glassmorphism) --- */
 .search-results {
@@ -161,65 +171,28 @@ nav { display: flex; gap: 25px; align-items: center; }
 }
 
 .result-meta { font-size: 0.85rem; color: #8f9bb3; display: flex; align-items: center; gap: 8px; }
+.meta-tag {
+    background: rgba(56, 189, 248, 0.1); color: var(--accent);
+    padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;
+    text-transform: uppercase;
+}
 
 .no-results { padding: 20px; text-align: center; color: #777; font-style: italic; }
 
-/* Botones Generales */
-.btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    border: none;
-    display: inline-block;
-}
-.btn-primary { background: var(--accent); color: #000; }
-.btn-primary:hover { opacity: 0.9; }
-.btn-outline { border: 1px solid var(--border); color: var(--text-main); background: transparent; }
-.btn-outline:hover { background: var(--bg-hover); }
-
-/* Container Base */
-.container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
-
-/* --- AJUSTES DEL BOTÓN DE LUPA --- */
-.search-bar button.search-icon-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted); /* Gris por defecto */
-    cursor: pointer;
-    font-size: 1.1rem;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease, transform 0.2s ease;
-}
-
-/* Efecto al hacer foco en el input */
-.search-bar:focus-within .search-icon-btn {
-    color: var(--accent); /* Se pone azul/acento */
-    transform: scale(1.1); /* Crece un poquito */
-}
 
 /* =========================================
    ESTILOS DE USUARIO (HEADER)
    ========================================= */
-
 .user-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    display: flex; align-items: center; gap: 12px;
 }
 
 /* Píldora del Perfil */
 .profile-pill {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.05); /* Fondo sutil */
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 5px 15px 5px 5px; /* Padding asimétrico para el avatar */
+    padding: 5px 15px 5px 5px;
     border-radius: 50px;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -232,10 +205,10 @@ nav { display: flex; gap: 25px; align-items: center; }
     transform: translateY(-1px);
 }
 
-/* Círculo del Avatar (Simulado) */
+/* Círculo del Avatar */
 .avatar-circle {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--accent), #1e3a8a); /* Gradiente Cyan-Azul */
+    background: linear-gradient(135deg, var(--accent), #1e3a8a);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: white;
@@ -244,13 +217,10 @@ nav { display: flex; gap: 25px; align-items: center; }
 }
 
 .username-text {
-    color: #e5e5e5;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding-right: 5px;
+    color: #e5e5e5; font-weight: 600; font-size: 0.9rem; padding-right: 5px;
 }
 
-/* Botón de Salir (Power Off) */
+/* Botón de Salir */
 .logout-icon-btn {
     width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
@@ -267,5 +237,164 @@ nav { display: flex; gap: 25px; align-items: center; }
     background: rgba(255, 71, 87, 0.1);
     border-color: rgba(255, 71, 87, 0.3);
     box-shadow: 0 0 10px rgba(255, 71, 87, 0.2);
-    transform: rotate(90deg); /* Pequeña animación al pasar el mouse */
+    transform: rotate(90deg);
+}
+
+
+/* =========================================
+   BOTONES Y CONTENEDOR BASE
+   ========================================= */
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    display: inline-block;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-outline { border: 1px solid var(--border); color: var(--text-main); background: transparent; }
+.btn-outline:hover { background: var(--bg-hover); }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+
+
+/* =========================================
+   CONFIGURACIÓN DE CUENTA (SETTINGS)
+   ========================================= */
+.settings-wrapper {
+    display: flex; justify-content: center; padding-top: 60px;
+}
+
+.settings-card {
+    background: rgba(30, 30, 35, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+
+.settings-header {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 20px; margin-bottom: 30px;
+}
+.settings-header h2 { font-size: 2rem; margin: 0; color: white; }
+.settings-header p { color: #8f9bb3; margin-top: 5px; }
+
+.settings-section { margin-bottom: 30px; }
+.settings-label {
+    display: block; color: #ccc; margin-bottom: 10px; font-weight: 600; font-size: 0.9rem;
+}
+
+.settings-input-group { display: flex; gap: 15px; }
+.settings-input {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    border-radius: 10px;
+    color: white; font-size: 1rem; transition: 0.3s;
+}
+.settings-input:focus {
+    border-color: var(--accent); outline: none; background: rgba(0,0,0,0.5);
+}
+.settings-input:disabled {
+    color: #666; background: rgba(0,0,0,0.5); border-color: transparent; cursor: not-allowed;
+}
+
+
+/* =========================================
+   MODAL DE CONFIRMACIÓN (PREMIUM)
+   ========================================= */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 3000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.custom-modal-overlay.active { opacity: 1; visibility: visible; }
+
+.custom-modal {
+    background: #18181b;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 30px;
+    width: 90%; max-width: 400px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+}
+
+.custom-modal-overlay.active .custom-modal { transform: scale(1); }
+
+.modal-icon { font-size: 3rem; color: #ff4757; margin-bottom: 20px; }
+.modal-title { font-size: 1.5rem; color: white; margin-bottom: 10px; font-weight: 800; }
+.modal-text { color: #aaa; margin-bottom: 25px; font-size: 0.95rem; line-height: 1.5; }
+
+.modal-actions { display: flex; gap: 15px; justify-content: center; }
+
+.btn-modal {
+    padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s;
+}
+.btn-cancel { background: rgba(255,255,255,0.1); color: white; }
+.btn-cancel:hover { background: rgba(255,255,255,0.2); }
+
+.btn-danger { background: #ff4757; color: white; box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3); }
+.btn-danger:hover { background: #ff6b81; transform: translateY(-2px); }
+
+
+/* =========================================
+   NOTIFICACIONES FLOTANTES (TOASTS)
+   ========================================= */
+.flash-container {
+    position: fixed; top: 100px; right: 20px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 15px;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    background: rgba(20, 20, 23, 0.95);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex; align-items: center; gap: 15px;
+    min-width: 300px; max-width: 400px;
+    border-left: 5px solid transparent;
+    animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.3s ease;
+}
+
+.toast-success { border-left-color: #46d369; }
+.toast-success .toast-icon { color: #46d369; }
+
+.toast-error { border-left-color: #ff4757; }
+.toast-error .toast-icon { color: #ff4757; }
+
+.toast-info { border-left-color: var(--accent); }
+.toast-info .toast-icon { color: var(--accent); }
+
+.toast-icon { font-size: 1.4rem; }
+.toast-body { flex: 1; font-size: 0.95rem; line-height: 1.4; }
+
+.toast-close {
+    background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; line-height: 1;
+}
+.toast-close:hover { color: white; }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }

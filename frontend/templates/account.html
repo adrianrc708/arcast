@@ -1,44 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Configuración de Cuenta{% endblock %}
+{% block title %}Configuración - FilmLog{% endblock %}
 
 {% block content %}
-<style>
-    .settings-box {
-        max-width: 800px;
-    }
-    .settings-box input[type="text"] {
-        padding: 8px;
-        margin-left: 10px;
-    }
-    .settings-box button {
-        padding: 8px 12px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 3px;
-        margin-left: 10px;
-    }
-    .email-section {
-        margin-top: 30px;
-    }
-</style>
+<div class="settings-wrapper">
+    <div class="settings-card">
+        <div class="settings-header">
+            <h2>Configuración</h2>
+            <p>Administra tu información personal</p>
+        </div>
 
-<div class="settings-box">
-    <h2>Account Settings</h2>
+        <div class="settings-section">
+            <label class="settings-label">Nombre de Usuario</label>
+            <form id="updateNameForm" action="{{ url_for('update_account') }}" method="POST" class="settings-input-group">
+                <input type="text" name="username" value="{{ user.username }}" class="settings-input" required>
+                <button type="button" class="btn btn-primary" onclick="confirmUpdate()">Guardar</button>
+            </form>
+        </div>
 
-    <h3>Personal Information</h3>
-    <form action="{{ url_for('update_account') }}" method="POST" style="display: inline-flex; align-items: center;">
-        <label for="username">Current Name: </label>
-        <input type="text" id="username" name="username" value="{{ user.username }}" required>
-        <button type="submit">Change my name</button>
-    </form>
+        <div class="settings-section">
+            <label class="settings-label">Correo Electrónico (No editable)</label>
+            <div class="settings-input-group">
+                <input type="email" value="{{ user.email }}" class="settings-input" disabled>
+            </div>
+        </div>
 
-    <hr style="margin-top: 20px;">
-
-    <div class="email-section">
-        <h3>Email Address</h3>
-        <p><strong>Current email:</strong> {{ user.email }}</p>
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+            <a href="{{ url_for('profile') }}" class="btn btn-outline">← Volver al Perfil</a>
+        </div>
     </div>
 </div>
+
+<div class="custom-modal-overlay" id="confirmationModal">
+    <div class="custom-modal">
+        <div class="modal-icon" style="color: var(--accent);">
+            <i class="fas fa-user-edit"></i>
+        </div>
+        <h3 class="modal-title">¿Cambiar nombre?</h3>
+        <p class="modal-text">Esto modificará tu identidad pública en la plataforma.</p>
+
+        <div class="modal-actions">
+            <button class="btn-modal btn-cancel" onclick="closeModal()">Cancelar</button>
+            <button class="btn-modal btn-primary" id="confirmBtn">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modalOverlay = document.getElementById('confirmationModal');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const form = document.getElementById('updateNameForm');
+
+    function confirmUpdate() {
+        modalOverlay.classList.add('active');
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+    }
+
+    confirmBtn.addEventListener('click', () => {
+        form.submit(); // Envía el formulario real
+    });
+
+    // Cerrar al hacer clic fuera
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
+    });
+</script>
 {% endblock %}
