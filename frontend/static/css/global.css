@@ -21,11 +21,13 @@ a { text-decoration: none; color: inherit; transition: 0.2s; }
 ul { list-style: none; padding: 0; margin: 0; }
 
 /* =========================================
-   HEADER & NAVEGACIÓN
+   HEADER & NAVEGACIÓN (Ajustado)
    ========================================= */
 header {
     background-color: rgba(15, 16, 20, 0.95);
-    padding: 15px 30px;
+    /* CAMBIO CLAVE: Padding 0 arriba/abajo, Altura Fija */
+    padding: 0 30px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -40,21 +42,22 @@ header {
 .logo-container {
     display: flex;
     align-items: center;
+    height: 100%; /* Ocupa toda la altura del header */
 }
 
 .logo-img {
-    height: 45px;
+    /* CAMBIO CLAVE: Tamaño grande que cabe en los 80px del header */
+    height: 60px;
     width: auto;
     filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
     transition: all 0.3s ease;
 }
 
 .logo-container:hover .logo-img {
-    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.9));
+    filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.9));
     transform: scale(1.05);
 }
 
-/* Menú */
 nav { display: flex; gap: 25px; align-items: center; }
 
 .nav-link {
