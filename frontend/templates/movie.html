@@ -1,122 +1,151 @@
 {% extends "base.html" %}
-{% block title %}{{ movie.title }}{% endblock %}
+{% block title %}{{ movie.title or movie.name }}{% endblock %}
 
 {% block content %}
-    <style>
-        .movie-header { display: flex; gap: 30px; margin-bottom: 40px; }
-        .poster-wrapper img { width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+<style>
+    /* Fondo Horizontal (Backdrop) */
+    .movie-backdrop {
+        position: relative; width: 100%; height: 400px;
+        /* Usamos la URL o un color por defecto si no hay imagen */
+        background-image: url('{{ movie.backdropUrl or movie.posterUrl }}');
+        background-size: cover; background-position: center;
+        border-radius: 10px; margin-bottom: 30px;
+        box-shadow: inset 0 0 200px rgba(0,0,0,0.9); /* Sombra para leer el texto */
+    }
+    .backdrop-content {
+        position: absolute; bottom: 30px; left: 30px; color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    .backdrop-content h1 { font-size: 3.5em; margin: 0; }
 
-        .info-wrapper { flex: 1; }
-        .info-wrapper h1 { font-size: 2.5em; margin: 0 0 10px 0; }
-        .meta-info { color: #666; margin-bottom: 20px; font-size: 0.9em; }
+    .detail-grid { display: grid; grid-template-columns: 250px 1fr; gap: 30px; }
+    .poster-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* Etiquetas de Género */
-        .genres { margin-bottom: 20px; }
-        .genre-tag {
-            background: #eee; padding: 5px 10px; border-radius: 15px;
-            font-size: 0.85em; margin-right: 5px; color: #333; display: inline-block;
-        }
+    .info-card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-top: 20px; }
+    .info-row { margin-bottom: 8px; font-size: 0.9em; }
+    .info-row strong { color: #555; display: inline-block; width: 100px; }
 
-        .trailer-container { margin-top: 30px; }
-        .video-responsive {
-            overflow: hidden; padding-bottom: 56.25%; position: relative; height: 0;
-        }
-        .video-responsive iframe {
-            left: 0; top: 0; height: 100%; width: 100%; position: absolute; border-radius: 8px;
-        }
+    /* Botón de Streaming/Cine */
+    .watch-btn {
+        display: flex; align-items: center; gap: 10px; justify-content: center;
+        background: #111; color: white; padding: 12px;
+        text-decoration: none; border-radius: 5px; margin-top: 15px;
+        font-weight: bold; transition: transform 0.2s;
+    }
+    .watch-btn:hover { transform: scale(1.02); background: #333; }
+    .watch-btn img { width: 24px; height: 24px; border-radius: 4px; }
 
-        .review-section { margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px; }
-    </style>
+    /* Reproductor */
+    .player-container { margin-top: 40px; }
+    .player-frame { width: 100%; height: 500px; border: none; border-radius: 10px; background: #000; }
+</style>
 
-    <a href="{{ url_for('index') }}" style="display:inline-block; margin-bottom: 20px;">&larr; Volver</a>
+<a href="{{ url_for('index') }}" style="display:inline-block; margin-bottom: 10px;">&larr; Volver</a>
 
-    <div class="movie-header">
-        <div class="poster-wrapper">
-            <img src="{{ movie.posterUrl or 'https://i.imgur.com/gA3S3jY.png' }}" alt="{{ movie.title }}">
+<div class="movie-backdrop">
+    <div class="backdrop-content">
+        <h1>{{ movie.title or movie.name }}</h1>
+        <div>
+            {% if movie.voteAverage %} ⭐ {{ (movie.voteAverage * 10)|int }}% {% endif %}
         </div>
+    </div>
+</div>
 
-        <div class="info-wrapper">
-            <h1>{{ movie.title }}</h1>
+<div class="detail-grid">
+    <div>
+        <img src="{{ movie.posterUrl }}" class="poster-img" alt="Poster">
 
-            <div class="meta-info">
-                <span>Estreno: {{ movie.releaseDate }}</span> |
-                <span>Puntuación: {{ movie.voteAverage }}/10</span>
-            </div>
-
-            {% if movie.genres %}
-                <div class="genres">
-                    {% for genre in movie.genres %}
-                        <span class="genre-tag">{{ genre }}</span>
-                    {% endfor %}
-                </div>
+        <div class="info-card">
+            <div class="info-row"><strong>Estreno:</strong> {{ movie.releaseDate or movie.firstAirDate }}</div>
+            {% if movie.duration %}
+                <div class="info-row"><strong>Duración:</strong> {{ movie.duration }} min</div>
+            {% endif %}
+            {% if movie.seasons %}
+                <div class="info-row"><strong>Temporadas:</strong> {{ movie.seasons }}</div>
+            {% endif %}
+            {% if movie.languages %}
+                <div class="info-row"><strong>Idiomas:</strong> {{ movie.languages|join(', ') }}</div>
             {% endif %}
 
-            <h3>Sinopsis</h3>
-            <p style="line-height: 1.6;">{{ movie.overview or 'Sin descripción.' }}</p>
+            <hr>
 
-            {% if movie.trailerKey %}
-                <div class="trailer-container" style="margin-top: 30px;">
-                    <h3>Trailer</h3>
-                    {% if movie.trailerKey %}
-                        <div class="video-responsive">
-                            <iframe
-                                src="https://www.youtube.com/embed/{{ movie.trailerKey }}"
-                                frameborder="0" allowfullscreen>
-                            </iframe>
-                        </div>
-                    {% else %}
-                        <div style="
-                            position: relative;
-                            width: 100%;
-                            height: 0;
-                            padding-bottom: 56.25%;
-                            background-image: url('{{ movie.posterUrl }}'); /* Fondo borroso del poster */
-                            background-size: cover;
-                            background-position: center;
-                            border-radius: 8px;
-                            overflow: hidden;
-                        ">
-                            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; flex-direction:column;">
-                                <a href="https://www.youtube.com/results?search_query={{ movie.title or movie.name }} trailer español" target="_blank" style="text-decoration:none; color:white; text-align:center;">
-                                    <div style="font-size: 4em; opacity: 0.9;">▶</div>
-                                    <div style="font-weight:bold; margin-top:10px; font-size:1.2em;">Ver Trailer en YouTube</div>
-                                </a>
-                            </div>
-                        </div>
+            {% if movie.watchLink %}
+                <p style="margin-bottom:5px; font-size:0.85em; color:#666;">Disponible en:</p>
+                <a href="{{ movie.watchLink }}" target="_blank" class="watch-btn">
+                    {% if movie.platformLogo %}
+                        <img src="{{ movie.platformLogo }}" alt="Logo">
                     {% endif %}
-                </div>
+                    Ver en {{ movie.platformName }}
+                </a>
+            {% else %}
+                <p style="font-size:0.9em; color:#888; text-align:center; margin-top:10px;">
+                    No disponible en streaming o cines actualmente.
+                </p>
             {% endif %}
         </div>
     </div>
 
-    <div class="review-section">
-        <h3>Reseñas de Usuarios</h3>
-        <form action="{{ url_for('add_review', movie_id=movie_id) }}" method="POST" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
-            <input type="hidden" name="movieTitle" value="{{ movie.title }}">
-            {% if not session.get('username') %}
-                <input type="text" name="username" placeholder="Tu nombre" required style="display:block; width:100%; margin-bottom:10px; padding:8px;">
-            {% endif %}
-            <select name="rating" style="margin-bottom:10px; padding:5px;">
-                <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
-                <option value="4">⭐⭐⭐⭐ Muy buena</option>
-                <option value="3">⭐⭐⭐ Regular</option>
-                <option value="2">⭐⭐ Mala</option>
-                <option value="1">⭐ Terrible</option>
-            </select>
-            <textarea name="text" rows="3" placeholder="Escribe tu opinión..." required style="width:100%; padding:8px; box-sizing: border-box;"></textarea>
-            <button type="submit" style="margin-top:10px; background:#fa320a; color:white; border:none; padding:8px 15px; cursor:pointer;">Publicar Reseña</button>
-        </form>
+    <div>
+        <h2>Sinopsis</h2>
+        <p style="line-height: 1.6; color: #444;">{{ movie.overview or 'No hay descripción disponible.' }}</p>
 
-        {% if reviews %}
-            {% for review in reviews %}
-                <div style="border-bottom:1px solid #eee; padding: 15px 0;">
-                    <strong>{{ review.username }}</strong> <span style="color:gold;">{{ '★' * review.rating }}</span>
-                    <p style="margin: 5px 0;">{{ review.text }}</p>
-                    <small style="color:#999;">{{ review.date.split('T')[0] }}</small>
-                </div>
+        <div style="margin: 20px 0;">
+            {% for genre in movie.genres %}
+                <span style="background:#eee; padding:5px 12px; border-radius:15px; font-size:0.85em; margin-right:5px;">{{ genre }}</span>
             {% endfor %}
-        {% else %}
-            <p>No hay reseñas aún.</p>
+        </div>
+
+        <div class="player-container">
+            <h2 style="border-left: 5px solid #fa320a; padding-left: 10px;">Ver Ahora</h2>
+            {% if movie.seasons %}
+                <iframe class="player-frame" src="https://vidsrc.xyz/embed/tv/{{ movie.tmdbId }}/1/1" allowfullscreen></iframe>
+            {% else %}
+                <iframe class="player-frame" src="https://vidsrc.xyz/embed/movie/{{ movie.tmdbId }}" allowfullscreen></iframe>
+            {% endif %}
+        </div>
+
+        {% if movie.trailerKey %}
+            <div style="margin-top: 40px;">
+                <h3>Trailer</h3>
+                <div style="position:relative; padding-bottom:56.25%; height:0;">
+                    <iframe src="https://www.youtube.com/embed/{{ movie.trailerKey }}"
+                        style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:10px;"
+                        frameborder="0" allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
         {% endif %}
+
+        <div class="review-section">
+            <h3>Reseñas</h3>
+            <form action="{{ url_for('add_review', movie_id=movie_id) }}" method="POST" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
+                <input type="hidden" name="movieTitle" value="{{ movie.title or movie.name }}">
+                {% if not session.get('username') %}
+                    <input type="text" name="username" placeholder="Tu nombre" required style="display:block; width:100%; margin-bottom:10px; padding:8px;">
+                {% endif %}
+                <select name="rating" style="margin-bottom:10px; padding:5px;">
+                    <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                    <option value="4">⭐⭐⭐⭐ Muy buena</option>
+                    <option value="3">⭐⭐⭐ Regular</option>
+                    <option value="2">⭐⭐ Mala</option>
+                    <option value="1">⭐ Terrible</option>
+                </select>
+                <textarea name="text" rows="3" placeholder="Escribe tu opinión..." required style="width:100%; padding:8px; box-sizing: border-box;"></textarea>
+                <button type="submit" style="margin-top:10px; background:#fa320a; color:white; border:none; padding:8px 15px; cursor:pointer;">Publicar</button>
+            </form>
+
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div style="border-bottom:1px solid #eee; padding: 15px 0;">
+                        <strong>{{ review.username }}</strong> <span style="color:gold;">{{ '★' * review.rating }}</span>
+                        <p style="margin: 5px 0;">{{ review.text }}</p>
+                        <small style="color:#999;">{{ review.date.split('T')[0] }}</small>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Sé el primero en opinar.</p>
+            {% endif %}
+        </div>
     </div>
+</div>
 {% endblock %}
