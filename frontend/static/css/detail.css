@@ -95,13 +95,39 @@
     display: flex; align-items: center; gap: 5px;
 }
 
+/* -----------------------------------------------------
+   SINOPSIS CON SCROLL (CAMBIO REALIZADO AQUÍ)
+   ----------------------------------------------------- */
 .movie-overview {
     font-size: 1.1rem;
     line-height: 1.7;
     color: rgba(255, 255, 255, 0.8);
     margin-bottom: 35px;
     max-width: 95%;
+
+    /* Lógica del scroll */
+    max-height: 150px;       /* Altura fija para que no empuje los botones */
+    overflow-y: auto;        /* Activa el scroll vertical */
+    padding-right: 15px;     /* Espacio para que el texto no toque la barra */
 }
+
+/* Estilo Premium para la barra de scroll */
+.movie-overview::-webkit-scrollbar {
+    width: 6px;
+}
+.movie-overview::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+.movie-overview::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+.movie-overview::-webkit-scrollbar-thumb:hover {
+    background: var(--accent); /* Se ilumina al pasar el mouse */
+}
+
 
 /* BOTONES Y ACCIONES */
 .action-row {
