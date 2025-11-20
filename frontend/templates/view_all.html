@@ -12,19 +12,8 @@
         background: white; cursor: pointer; font-size: 0.9em;
     }
     .filter-group label { font-weight: bold; margin-right: 5px; font-size: 0.9em; color: #555; }
-
-    .filter-btn {
-        padding: 8px 20px; background: #333; color: white; border: none;
-        border-radius: 20px; cursor: pointer;
-    }
-
-    .results-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 25px;
-    }
-
-    /* Reutilizamos estilos de tarjeta */
+    .filter-btn { padding: 8px 20px; background: #333; color: white; border: none; border-radius: 20px; cursor: pointer; }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
     .media-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .poster-frame { height: 260px; display: block; background: #ddd; }
     .poster-frame img { width: 100%; height: 100%; object-fit: cover; }
@@ -34,7 +23,6 @@
 <h1>Explorar {{ category|capitalize }}</h1>
 
 <form action="{{ url_for('view_all', category=category) }}" method="GET" class="filters-bar">
-
     <div class="filter-group">
         <label>ORDENAR:</label>
         <select name="sort" onchange="this.form.submit()">
@@ -42,7 +30,6 @@
             <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>Mejor Calificadas</option>
         </select>
     </div>
-
     <div class="filter-group">
         <label>GÉNERO:</label>
         <select name="genre" onchange="this.form.submit()">
@@ -53,7 +40,6 @@
             <option value="Drama" {% if current_filters.genre == 'Drama' %}selected{% endif %}>Drama</option>
         </select>
     </div>
-
     <div class="filter-group">
         <label>PLATAFORMA:</label>
         <select name="platform" onchange="this.form.submit()">
@@ -64,8 +50,6 @@
             <option value="Amazon Prime" {% if current_filters.platform == 'Amazon Prime' %}selected{% endif %}>Amazon Prime</option>
         </select>
     </div>
-
-    <noscript><button type="submit" class="filter-btn">Aplicar</button></noscript>
 </form>
 
 <div class="results-grid">
@@ -85,6 +69,9 @@
 
                 <form action="{{ url_for('add_to_watchlist') }}" method="POST" style="margin-top:10px;">
                     <input type="hidden" name="movieId" value="{{ item._id }}">
+
+                    <input type="hidden" name="contentType" value="{{ 'tv' if category == 'tvshows' else 'movie' }}">
+
                     <button type="submit" style="width:100%; background:white; border:1px solid #333; padding:5px; cursor:pointer; border-radius:15px; font-weight:bold;">+ WATCHLIST</button>
                 </form>
             </div>
@@ -93,5 +80,4 @@
         <p>No se encontraron resultados con estos filtros.</p>
     {% endfor %}
 </div>
-
 {% endblock %}

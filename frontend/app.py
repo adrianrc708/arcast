@@ -405,32 +405,44 @@ def add_to_watchlist():
     return redirect(request.referrer or url_for('index'))
 
 
-# --- NUEVA RUTA: Eliminar de Watchlist ---
+# ...
+
 @app.route('/remove_from_watchlist/<item_id>', methods=['POST'])
 def remove_from_watchlist(item_id):
     if not session.get('token'): return redirect(url_for('login'))
 
     try:
         headers = get_auth_headers()
-        requests.delete(f"{BACKEND_API_URL}/user/me/watchlist/{item_id}", headers=headers)
-        flash('Eliminado de la watchlist.', 'success')
+        response = requests.delete(f"{BACKEND_API_URL}/user/me/watchlist/{item_id}", headers=headers)
+
+        # --- VERIFICACIÓN DE ÉXITO ---
+        if response.status_code == 200:
+            flash('Eliminado de la watchlist.', 'success')
+        else:
+            flash(f"Error al eliminar: {response.json().get('message', 'Error desconocido')}", 'error')
+
     except:
-        flash("Error al eliminar.", "error")
+        flash("Error de conexión al eliminar.", "error")
 
     return redirect(url_for('profile'))
 
 
-# --- NUEVA RUTA: Eliminar Reseña ---
 @app.route('/delete_review/<review_id>', methods=['POST'])
 def delete_review(review_id):
     if not session.get('token'): return redirect(url_for('login'))
 
     try:
         headers = get_auth_headers()
-        requests.delete(f"{BACKEND_API_URL}/reviews/{review_id}", headers=headers)
-        flash('Reseña eliminada.', 'success')
+        response = requests.delete(f"{BACKEND_API_URL}/reviews/{review_id}", headers=headers)
+
+        # --- VERIFICACIÓN DE ÉXITO ---
+        if response.status_code == 200:
+            flash('Reseña eliminada.', 'success')
+        else:
+            flash(f"No se pudo eliminar: {response.json().get('message', 'Error desconocido')}", 'error')
+
     except:
-        flash("Error al eliminar reseña.", "error")
+        flash("Error de conexión al eliminar reseña.", "error")
 
     return redirect(url_for('profile'))
 

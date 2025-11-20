@@ -7,9 +7,9 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     date: { type: Date, default: Date.now },
 
-    // --- MODIFICADO: Referencia Dinámica ---
+    // --- CORRECCIÓN AQUÍ ---
     watchlist: [{
-        item: { type: Schema.Types.ObjectId, refPath: 'watchlist.kind' },
+        item: { type: Schema.Types.ObjectId, refPath: 'kind' }, // Antes decía 'watchlist.kind' (ERROR)
         kind: { type: String, required: true, enum: ['Movie', 'TVShow'] }
     }]
 });

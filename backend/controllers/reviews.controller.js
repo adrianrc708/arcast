@@ -82,6 +82,7 @@ exports.updateReview = async (req, res) => {
 };
 
 // DELETE /api/reviews/:id -> eliminar reseña (Modificado para seguridad)
+// DELETE /api/reviews/:id -> eliminar reseña
 exports.deleteReview = async (req, res) => {
     try {
         const review = await Review.findById(req.params.id);
@@ -93,7 +94,9 @@ exports.deleteReview = async (req, res) => {
         }
         // --- Fin Verificación ---
 
-        await review.remove();
+        // CORRECCIÓN: Usar deleteOne() en lugar de remove()
+        await review.deleteOne();
+
         res.json({ message: 'Reseña eliminada' });
     } catch (err) {
         res.status(500).json({ message: err.message });

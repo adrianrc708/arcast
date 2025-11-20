@@ -6,11 +6,10 @@
     /* Fondo Horizontal (Backdrop) */
     .movie-backdrop {
         position: relative; width: 100%; height: 400px;
-        /* Usamos la URL o un color por defecto si no hay imagen */
         background-image: url('{{ movie.backdropUrl or movie.posterUrl }}');
         background-size: cover; background-position: center;
         border-radius: 10px; margin-bottom: 30px;
-        box-shadow: inset 0 0 200px rgba(0,0,0,0.9); /* Sombra para leer el texto */
+        box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
     }
     .backdrop-content {
         position: absolute; bottom: 30px; left: 30px; color: white;
@@ -25,7 +24,6 @@
     .info-row { margin-bottom: 8px; font-size: 0.9em; }
     .info-row strong { color: #555; display: inline-block; width: 100px; }
 
-    /* Botón de Streaming/Cine */
     .watch-btn {
         display: flex; align-items: center; gap: 10px; justify-content: center;
         background: #111; color: white; padding: 12px;
@@ -35,7 +33,14 @@
     .watch-btn:hover { transform: scale(1.02); background: #333; }
     .watch-btn img { width: 24px; height: 24px; border-radius: 4px; }
 
-    /* Reproductor */
+    /* Botón Watchlist en detalle */
+    .watchlist-btn-detail {
+        width: 100%; margin-top: 10px; padding: 10px;
+        background: white; border: 2px solid #333; border-radius: 5px;
+        font-weight: bold; cursor: pointer; transition: all 0.2s;
+    }
+    .watchlist-btn-detail:hover { background: #333; color: white; }
+
     .player-container { margin-top: 40px; }
     .player-frame { width: 100%; height: 500px; border: none; border-radius: 10px; background: #000; }
 </style>
@@ -45,9 +50,7 @@
 <div class="movie-backdrop">
     <div class="backdrop-content">
         <h1>{{ movie.title or movie.name }}</h1>
-        <div>
-            {% if movie.voteAverage %} ⭐ {{ (movie.voteAverage * 10)|int }}% {% endif %}
-        </div>
+        <div>{% if movie.voteAverage %} ⭐ {{ (movie.voteAverage * 10)|int }}% {% endif %}</div>
     </div>
 </div>
 
@@ -70,18 +73,19 @@
             <hr>
 
             {% if movie.watchLink %}
-                <p style="margin-bottom:5px; font-size:0.85em; color:#666;">Disponible en:</p>
                 <a href="{{ movie.watchLink }}" target="_blank" class="watch-btn">
-                    {% if movie.platformLogo %}
-                        <img src="{{ movie.platformLogo }}" alt="Logo">
-                    {% endif %}
+                    {% if movie.platformLogo %} <img src="{{ movie.platformLogo }}" alt="Logo"> {% endif %}
                     Ver en {{ movie.platformName }}
                 </a>
             {% else %}
-                <p style="font-size:0.9em; color:#888; text-align:center; margin-top:10px;">
-                    No disponible en streaming o cines actualmente.
-                </p>
+                <p style="font-size:0.9em; color:#888; text-align:center; margin-top:10px;">No disponible en streaming.</p>
             {% endif %}
+
+            <form action="{{ url_for('add_to_watchlist') }}" method="POST">
+                <input type="hidden" name="movieId" value="{{ movie._id }}">
+                <input type="hidden" name="contentType" value="{% if movie.seasons %}tv{% else %}movie{% endif %}">
+                <button type="submit" class="watchlist-btn-detail">+ Agregar a Watchlist</button>
+            </form>
         </div>
     </div>
 
@@ -116,13 +120,11 @@
             </div>
         {% endif %}
 
-        <div class="review-section">
+        <div class="review-section" style="margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px;">
             <h3>Reseñas</h3>
             <form action="{{ url_for('add_review', movie_id=movie_id) }}" method="POST" style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px;">
-
                 <input type="hidden" name="movieTitle" value="{{ movie.title or movie.name }}">
-
-                <input type="hidden" name="contentType" value="{{ content_type }}">
+                <input type="hidden" name="contentType" value="{% if movie.seasons %}tv{% else %}movie{% endif %}">
 
                 {% if not session.get('username') %}
                     <input type="text" name="username" placeholder="Tu nombre" required style="display:block; width:100%; margin-bottom:10px; padding:8px;">
@@ -135,7 +137,7 @@
                     <option value="1">⭐ Terrible</option>
                 </select>
                 <textarea name="text" rows="3" placeholder="Escribe tu opinión..." required style="width:100%; padding:8px; box-sizing: border-box;"></textarea>
-                <button type="submit" style="margin-top:10px; background:#fa320a; color:white; border:none; padding:8px 15px; cursor:pointer;">Publicar Reseña</button>
+                <button type="submit" style="margin-top:10px; background:#fa320a; color:white; border:none; padding:8px 15px; cursor:pointer;">Publicar</button>
             </form>
 
             {% if reviews %}

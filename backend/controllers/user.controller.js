@@ -47,23 +47,25 @@ exports.getMyReviews = async (req, res) => {
 };
 // ... (imports y funciones getMe/updateMe/getMyReviews siguen igual) ...
 
-// --- MODIFICADO: Agregar a Watchlist (Soporta Cine y TV) ---
+// --- MODIFICADO: Agregar a Watchlist (Con protección) ---
 exports.addToWatchlist = async (req, res) => {
-    const { movieId, contentType } = req.body; // contentType debe ser 'movie' o 'tv'
+    const { movieId, contentType } = req.body;
 
     try {
         const user = await User.findById(req.user.id);
 
-        // Convertir 'movie'/'tv' a los nombres de los Modelos ('Movie'/'TVShow')
+        // PROTECCIÓN: Si el usuario no existe (porque se borró la DB), devolvemos error 404
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado. Por favor cierra sesión y regístrate de nuevo.' });
+        }
+
         const modelName = contentType === 'tv' ? 'TVShow' : 'Movie';
 
-        // Verificar duplicados
-        const exists = user.watchlist.find(w => w.item.toString() === movieId);
+        const exists = user.watchlist.find(w => w.item && w.item.toString() === movieId);
         if (exists) {
             return res.status(400).json({ message: 'Ya está en tu watchlist.' });
         }
 
-        // Guardar con el tipo correcto
         user.watchlist.push({ item: movieId, kind: modelName });
         await user.save();
         res.json(user.watchlist);
@@ -71,7 +73,6 @@ exports.addToWatchlist = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 // --- MODIFICADO: Obtener Watchlist (Populate dinámico) ---
 exports.getWatchlist = async (req, res) => {
     try {
@@ -87,14 +88,15 @@ exports.getWatchlist = async (req, res) => {
     }
 };
 
-// --- NUEVA FUNCIÓN: Eliminar de Watchlist ---
+// --- NUEVA FUNCIÓN: Eliminar de Watchlist (Versión Robusta) ---
 exports.removeFromWatchlist = async (req, res) => {
-    const { itemId } = req.params; // ID del elemento a borrar
+    const { itemId } = req.params;
     try {
         const user = await User.findById(req.user.id);
 
-        // Filtramos para quitar el item
-        user.watchlist = user.watchlist.filter(w => w.item.toString() !== itemId);
+        // Filtramos la watchlist eliminando el elemento cuyo 'item' coincida con el ID recibido
+        // Importante: Convertimos a String para comparar correctamente
+        user.watchlist = user.watchlist.filter(w => w.item && w.item.toString() !== itemId);
 
         await user.save();
         res.json({ message: 'Eliminado de la watchlist' });

@@ -3,222 +3,151 @@
 
 {% block content %}
     <style>
-        /* Estilos Generales para el CONTENIDO PRINCIPAL */
-        .main-content-area {
-            padding: 20px; /* Añade un padding general a todo el contenido */
-        }
-
-        /* Estilos para los títulos de las categorías */
+        /* Estilos Generales */
         h2.category-title {
-            font-size: 1.4em;
-            margin-top: 40px;
-            margin-bottom: 15px;
-            border-left: 5px solid #fa320a; /* Borde rojo estilo marca */
-            padding-left: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex; /* Permite alinear el título y el "View All" */
-            justify-content: space-between; /* Empuja el "View All" a la derecha */
-            align-items: center;
+            font-size: 1.4em; margin-top: 40px; margin-bottom: 15px;
+            border-left: 5px solid #fa320a; padding-left: 15px;
+            text-transform: uppercase; letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        /* Enlace "Ver Todo" */
         .view-all-link {
-            font-size: 0.8em;
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-            letter-spacing: 0;
-            text-transform: none;
-            margin-left: auto; /* Asegura que se alinea a la derecha */
-            padding-right: 10px; /* Pequeño padding para que no se pegue al borde */
+            font-size: 0.8em; color: #007bff; text-decoration: none;
+            font-weight: bold; margin-right: 10px;
         }
         .view-all-link:hover { text-decoration: underline; }
 
-        /* --- GRID FIJO (SIN SCROLL) de 5 Columnas --- */
+        /* Grid Fijo */
         .media-row {
             display: grid;
-            /* Forzamos 5 columnas de igual tamaño.
-               Si la pantalla es muy chica, el navegador las adaptará */
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px; /* Espacio entre las tarjetas */
-            width: 100%;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px; width: 100%;
         }
 
-        /* Tarjeta Individual */
         .media-card {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.2s ease;
-            position: relative;
-            border: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: white; border-radius: 8px; overflow: hidden;
+            transition: transform 0.2s ease; border: 1px solid #eee;
+            display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .media-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            z-index: 10;
-        }
+        .media-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); z-index: 10; }
 
-        /* Imagen del Póster */
-        .poster-frame {
-            height: 280px; /* Altura más grande para el póster */
-            width: 100%;
-            background-color: #ddd;
-            display: block;
-        }
-        .poster-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .poster-frame { height: 240px; width: 100%; background-color: #ddd; display: block; }
+        .poster-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Contenido de la tarjeta */
-        .card-info {
-            padding: 10px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+        .card-info { padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
 
-        .score-row {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.85em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
+        .score-row { display: flex; align-items: center; gap: 5px; font-size: 0.85em; font-weight: bold; color: #333; margin-bottom: 5px; }
 
         .media-title {
-            font-size: 0.9em;
-            font-weight: bold;
-            margin: 0 0 10px 0;
-            line-height: 1.2;
-            display: -webkit-box;
-            -webkit-line-clamp: 2; /* Limitar título a 2 líneas */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-decoration: none;
-            color: #000;
+            font-size: 0.9em; font-weight: bold; margin: 0 0 10px 0; line-height: 1.2;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; text-decoration: none; color: #000;
         }
         .media-title:hover { color: #fa320a; }
 
-        /* Botón Watchlist */
         .watchlist-btn {
-            background-color: white;
-            color: #333;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 6px 0;
-            font-size: 0.75em;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            margin-top: auto; /* Empujar al fondo */
+            background-color: white; color: #333; border: 1px solid #ccc; border-radius: 20px;
+            padding: 6px 0; font-size: 0.75em; font-weight: bold; cursor: pointer;
+            width: 100%; transition: all 0.2s; display: flex; justify-content: center;
+            align-items: center; gap: 5px; margin-top: auto;
         }
-        .watchlist-btn:hover {
-            background-color: #fa320a;
-            color: white;
-            border-color: #fa320a;
-        }
+        .watchlist-btn:hover { background-color: #fa320a; color: white; border-color: #fa320a; }
+
+        /* Import Bar */
+        .import-section { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 40px; border: 1px solid #e9ecef; }
+        .import-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .import-form { flex: 1; display: flex; gap: 10px; min-width: 300px; }
+        .import-form input { flex: 1; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; }
+        .import-form button { padding: 8px 15px; background-color: #333; color: white; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 
-    <div class="main-content-area">
-        {% macro render_row(title, items, category_type, genre_filter=None) %}
-            {% if items %}
-            <h2 class="category-title">
-                {{ title }}
-                <a href="{{ url_for('view_all', category=category_type, genre=genre_filter) }}" class="view-all-link">VIEW ALL ></a>
-            </h2>
+    <div class="import-section">
+        <h3 style="margin-top:0;">Agregar Contenido</h3>
+        <div class="import-row">
+            <form action="{{ url_for('import_movie') }}" method="POST" class="import-form">
+                <input type="text" name="title" placeholder="Importar Película (ej. Matrix)" required>
+                <button type="submit">Buscar Película</button>
+            </form>
+            <form action="{{ url_for('import_tv') }}" method="POST" class="import-form">
+                <input type="text" name="name" placeholder="Importar Serie (ej. The Office)" required>
+                <button type="submit">Buscar Serie</button>
+            </form>
+        </div>
+    </div>
 
-            <div class="media-row">
-                {% for item in items %}
-                    <div class="media-card">
-                        <a href="{{ url_for('movie_detail', content_id=item._id) }}" class="poster-frame">
-                            <img src="{{ item.posterUrl or 'https://via.placeholder.com/180x280?text=No+Image' }}" alt="{{ item.title or item.name }}">
-                        </a>
-                        <div class="card-info">
-                            <div class="score-row">
-                                <span style="color: tomato;">🍅</span>
-                                {% if item.voteAverage %}
-                                    {{ (item.voteAverage * 10)|round|int }}%
-                                {% else %}
-                                    --
-                                {% endif %}
-                            </div>
-                            <a href="{{ url_for('movie_detail', content_id=item._id) }}" class="media-title" title="{{ item.title or item.name }}">
-                                {{ item.title or item.name }}
-                            </a>
-                            <form action="{{ url_for('add_to_watchlist') }}" method="POST">
-                                <input type="hidden" name="movieId" value="{{ item._id }}">
-                                <button type="submit" class="watchlist-btn">
-                                    <span>+</span> WATCHLIST
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+    {% macro render_row(title, items, genre_filter=None) %}
+        {% if items %}
+        <div class="row-header">
+            <h2>{{ title }}</h2>
+            {% if genre_filter %}
+                <a href="{{ url_for('view_all', category='movies', genre=genre_filter) }}" class="view-all-link">VIEW ALL ></a>
             {% endif %}
-        {% endmacro %}
+        </div>
 
-        {{ render_row("🔥 Aclamadas por la Crítica", top_rated, "movies") }}
-
-        {{ render_row("💥 Acción y Aventura", action_movies, "movies", "Acción") }}
-
-        {{ render_row("😂 Comedias", comedy_movies, "movies", "Comedia") }}
-
-        {{ render_row("👻 Terror y Suspenso", horror_movies, "movies", "Terror") }}
-
-        {{ render_row("🎭 Dramas Intensos", drama_movies, "movies", "Drama") }}
-
-        {{ render_row("🚀 Ciencia Ficción", scifi_movies, "movies", "Ciencia ficción") }}
-
-        {{ render_row("🎨 Animación", anim_movies, "movies", "Animación") }}
-
-        {% if tv_shows %}
-        <h2 class="category-title">
-            📺 Series de TV Populares
-            <a href="{{ url_for('view_all', category='tvshows') }}" class="view-all-link">VIEW ALL ></a>
-        </h2>
         <div class="media-row">
-            {% for show in tv_shows %}
+            {% for item in items %}
                 <div class="media-card">
-                    <a href="{{ url_for('movie_detail', content_id=show._id) }}" class="poster-frame">
-                        <img src="{{ show.posterUrl or 'https://via.placeholder.com/180x280?text=No+Image' }}" alt="{{ show.name }}">
+                    <a href="{{ url_for('movie_detail', content_id=item._id) }}" class="poster-frame">
+                        <img src="{{ item.posterUrl or 'https://via.placeholder.com/160x240?text=No+Image' }}" alt="{{ item.title if item.title else item.name }}">
                     </a>
                     <div class="card-info">
                         <div class="score-row">
                             <span style="color: tomato;">🍅</span>
-                            {% if show.voteAverage %}
-                                {{ (show.voteAverage * 10)|round|int }}%
-                            {% else %}
-                                --
-                            {% endif %}
+                            {% if item.voteAverage %} {{ (item.voteAverage * 10)|round|int }}% {% else %} -- {% endif %}
                         </div>
-                        <a href="{{ url_for('movie_detail', content_id=show._id) }}" class="media-title" title="{{ show.name }}">
-                            {{ show.name }}
+
+                        <a href="{{ url_for('movie_detail', content_id=item._id) }}" class="media-title">
+                            {{ item.title if item.title else item.name }}
                         </a>
+
                         <form action="{{ url_for('add_to_watchlist') }}" method="POST">
-                            <input type="hidden" name="movieId" value="{{ show._id }}">
-                            <button type="submit" class="watchlist-btn">
-                                <span>+</span> WATCHLIST
-                            </button>
+                            <input type="hidden" name="movieId" value="{{ item._id }}">
+                            <input type="hidden" name="contentType" value="{{ 'tv' if item.name else 'movie' }}">
+                            <button type="submit" class="watchlist-btn"><span>+</span> WATCHLIST</button>
                         </form>
                     </div>
                 </div>
             {% endfor %}
         </div>
         {% endif %}
-    </div> {% endblock %}
+    {% endmacro %}
+
+    {{ render_row("🔥 Aclamadas por la Crítica", top_rated) }}
+    {{ render_row("💥 Acción y Aventura", action_movies, "Acción") }}
+    {{ render_row("😂 Comedias", comedy_movies, "Comedia") }}
+    {{ render_row("👻 Terror y Suspenso", horror_movies, "Terror") }}
+    {{ render_row("🎭 Dramas Intensos", drama_movies, "Drama") }}
+    {{ render_row("🚀 Ciencia Ficción", scifi_movies, "Ciencia ficción") }}
+    {{ render_row("🎨 Animación", anim_movies, "Animación") }}
+
+    {% if tv_shows %}
+    <div class="row-header">
+        <h2>📺 Series de TV Populares</h2>
+        <a href="{{ url_for('view_all', category='tvshows') }}" class="view-all-link">VIEW ALL ></a>
+    </div>
+    <div class="media-row">
+        {% for show in tv_shows %}
+            <div class="media-card">
+                <a href="{{ url_for('movie_detail', content_id=show._id) }}" class="poster-frame">
+                    <img src="{{ show.posterUrl or 'https://via.placeholder.com/160x240?text=No+Image' }}" alt="{{ show.name }}">
+                </a>
+                <div class="card-info">
+                    <div class="score-row">
+                        <span style="color: tomato;">🍅</span>
+                        {% if show.voteAverage %} {{ (show.voteAverage * 10)|round|int }}% {% else %} -- {% endif %}
+                    </div>
+                    <a href="{{ url_for('movie_detail', content_id=show._id) }}" class="media-title" title="{{ show.name }}">
+                        {{ show.name }}
+                    </a>
+                    <form action="{{ url_for('add_to_watchlist') }}" method="POST">
+                        <input type="hidden" name="movieId" value="{{ show._id }}">
+                        <input type="hidden" name="contentType" value="tv">
+                        <button type="submit" class="watchlist-btn"><span>+</span> WATCHLIST</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+{% endblock %}
