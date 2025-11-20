@@ -72,18 +72,27 @@
             <h3>My Watchlist</h3>
             {% if my_watchlist %}
                 {% for entry in my_watchlist %}
-                    {% if entry.item %}
-                        <div class="item-list">
+                    <div class="item-list">
+                        {# CASO 1: Elemento dañado (es solo texto/ID) #}
+                        {% if entry.item is string %}
+                            <form action="{{ url_for('remove_from_watchlist', item_id=entry.item) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn-delete">Quitar</button>
+                            </form>
+                            <span style="color: red; font-size: 0.9em;">
+                                ⚠️ Elemento no válido (ID: {{ entry.item }})
+                            </span>
+
+                        {# CASO 2: Elemento correcto (es un objeto con título) #}
+                        {% elif entry.item %}
                             <form action="{{ url_for('remove_from_watchlist', item_id=entry.item._id) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="btn-delete">Quitar</button>
                             </form>
-
                             <a href="{{ url_for('movie_detail', content_id=entry.item._id) }}">
                                 {% if entry.kind == 'TVShow' %} 📺 {% else %} 🎬 {% endif %}
                                 {{ entry.item.title if entry.item.title else entry.item.name }}
                             </a>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 {% endfor %}
             {% else %}
                 <div class="icon" style="line-height: 55px;">+</div>
