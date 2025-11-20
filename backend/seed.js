@@ -10,7 +10,10 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
+// GÉNEROS A IMPORTAR
 const GENRES_TO_FETCH = [28, 35, 27, 18, 878, 16];
+// CANTIDAD DE PÁGINAS A RECORRER POR GÉNERO/CATEGORÍA (Aumenta este número para más datos)
+const PAGES_TO_FETCH = 5;
 
 // --- HELPERS ---
 const findTrailer = (videos) => {
@@ -50,93 +53,121 @@ const getWatchProviders = (providers, releaseDate) => {
 
 async function importMoviesByGenre(genreId) {
     try {
-        console.log(`🎬 Importando género ${genreId}...`);
-        const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
-            params: {
-                api_key: TMDB_API_KEY,
-                language: 'es-ES',
-                with_genres: genreId,
-                sort_by: 'popularity.desc',
-                page: 1
-            }
-        });
+        console.log(`\n🎬 Importando género ID ${genreId}...`);
 
-        for (const basicData of response.data.results) {
-            const existing = await Movie.findOne({ tmdbId: basicData.id });
-            if (!existing) {
-                const detailRes = await axios.get(`${TMDB_BASE_URL}/movie/${basicData.id}`, {
-                    params: {
-                        api_key: TMDB_API_KEY,
-                        language: 'es-ES',
-                        append_to_response: 'videos,watch/providers',
-                        include_video_language: 'es,en,null'
+        // BUCLE PARA TRAER MÁS PÁGINAS
+        for (let page = 1; page <= PAGES_TO_FETCH; page++) {
+            console.log(`   ↳ Procesando página ${page}...`);
+
+            const response = await axios.get(`${TMDB_BASE_URL}/discover/movie`, {
+                params: {
+                    api_key: TMDB_API_KEY,
+                    language: 'es-ES',
+                    with_genres: genreId,
+                    sort_by: 'popularity.desc',
+                    page: page // Paginación dinámica
+                }
+            });
+
+            for (const basicData of response.data.results) {
+                const existing = await Movie.findOne({ tmdbId: basicData.id });
+                if (!existing) {
+                    try {
+                        const detailRes = await axios.get(`${TMDB_BASE_URL}/movie/${basicData.id}`, {
+                            params: {
+                                api_key: TMDB_API_KEY,
+                                language: 'es-ES',
+                                append_to_response: 'videos,watch/providers',
+                                include_video_language: 'es,en,null'
+                            }
+                        });
+                        const d = detailRes.data;
+                        const platforms = getWatchProviders(d['watch/providers'], d.release_date);
+
+                        const movie = new Movie({
+                            title: d.title,
+                            overview: d.overview,
+                            posterUrl: d.poster_path ? `${TMDB_IMG_URL}${d.poster_path}` : null,
+                            backdropUrl: d.backdrop_path ? `${TMDB_BACKDROP_URL}${d.backdrop_path}` : null,
+                            tmdbId: d.id,
+                            releaseDate: d.release_date,
+                            voteAverage: d.vote_average,
+                            genres: d.genres.map(g => g.name),
+                            trailerKey: findTrailer(d.videos),
+                            duration: d.runtime,
+                            languages: d.spoken_languages.map(l => l.name),
+                            platforms: platforms,
+                            watchLink: platforms.length > 0 ? platforms[0].link : null
+                        });
+                        await movie.save();
+                        process.stdout.write('+'); // Indicador visual de guardado
+                    } catch (innerErr) {
+                        process.stdout.write('x'); // Error puntual en una peli
                     }
-                });
-                const d = detailRes.data;
-                const platforms = getWatchProviders(d['watch/providers'], d.release_date);
-
-                const movie = new Movie({
-                    title: d.title,
-                    overview: d.overview,
-                    posterUrl: d.poster_path ? `${TMDB_IMG_URL}${d.poster_path}` : null,
-                    backdropUrl: d.backdrop_path ? `${TMDB_BACKDROP_URL}${d.backdrop_path}` : null,
-                    tmdbId: d.id,
-                    releaseDate: d.release_date,
-                    voteAverage: d.vote_average,
-                    genres: d.genres.map(g => g.name),
-                    trailerKey: findTrailer(d.videos),
-                    duration: d.runtime,
-                    languages: d.spoken_languages.map(l => l.name),
-                    platforms: platforms,
-                    watchLink: platforms.length > 0 ? platforms[0].link : null
-                });
-                await movie.save();
-                process.stdout.write('.');
+                } else {
+                    process.stdout.write('.'); // Ya existía
+                }
             }
         }
     } catch (err) {
-        console.error('Error:', err.message);
+        console.error(`Error en género ${genreId}:`, err.message);
     }
 }
 
 async function importPopularTVShows() {
     try {
-        console.log('\n📺 Importando Series Populares...');
-        const response = await axios.get(`${TMDB_BASE_URL}/tv/popular`, {
-            params: { api_key: TMDB_API_KEY, language: 'es-ES' }
-        });
+        console.log('\n\n📺 Importando Series Populares...');
 
-        for (const basicData of response.data.results) {
-            const existing = await TVShow.findOne({ tmdbId: basicData.id });
-            if (!existing) {
-                const detailRes = await axios.get(`${TMDB_BASE_URL}/tv/${basicData.id}`, {
-                    params: {
-                        api_key: TMDB_API_KEY,
-                        language: 'es-ES',
-                        append_to_response: 'videos,watch/providers',
-                        include_video_language: 'es,en,null'
+        // BUCLE PARA TRAER MÁS PÁGINAS DE SERIES
+        for (let page = 1; page <= PAGES_TO_FETCH; page++) {
+            console.log(`   ↳ Procesando página ${page}...`);
+
+            const response = await axios.get(`${TMDB_BASE_URL}/tv/popular`, {
+                params: {
+                    api_key: TMDB_API_KEY,
+                    language: 'es-ES',
+                    page: page
+                }
+            });
+
+            for (const basicData of response.data.results) {
+                const existing = await TVShow.findOne({ tmdbId: basicData.id });
+                if (!existing) {
+                    try {
+                        const detailRes = await axios.get(`${TMDB_BASE_URL}/tv/${basicData.id}`, {
+                            params: {
+                                api_key: TMDB_API_KEY,
+                                language: 'es-ES',
+                                append_to_response: 'videos,watch/providers',
+                                include_video_language: 'es,en,null'
+                            }
+                        });
+                        const d = detailRes.data;
+                        const platforms = getWatchProviders(d['watch/providers'], d.first_air_date);
+
+                        const show = new TVShow({
+                            name: d.name,
+                            overview: d.overview,
+                            posterUrl: d.poster_path ? `${TMDB_IMG_URL}${d.poster_path}` : null,
+                            backdropUrl: d.backdrop_path ? `${TMDB_BACKDROP_URL}${d.backdrop_path}` : null,
+                            tmdbId: d.id,
+                            firstAirDate: d.first_air_date,
+                            voteAverage: d.vote_average,
+                            genres: d.genres.map(g => g.name),
+                            trailerKey: findTrailer(d.videos),
+                            seasons: d.number_of_seasons,
+                            languages: d.spoken_languages.map(l => l.name),
+                            platforms: platforms,
+                            watchLink: platforms.length > 0 ? platforms[0].link : null
+                        });
+                        await show.save();
+                        process.stdout.write('+');
+                    } catch (innerErr) {
+                        process.stdout.write('x');
                     }
-                });
-                const d = detailRes.data;
-                const platforms = getWatchProviders(d['watch/providers'], d.first_air_date);
-
-                const show = new TVShow({
-                    name: d.name,
-                    overview: d.overview,
-                    posterUrl: d.poster_path ? `${TMDB_IMG_URL}${d.poster_path}` : null,
-                    backdropUrl: d.backdrop_path ? `${TMDB_BACKDROP_URL}${d.backdrop_path}` : null,
-                    tmdbId: d.id,
-                    firstAirDate: d.first_air_date,
-                    voteAverage: d.vote_average,
-                    genres: d.genres.map(g => g.name),
-                    trailerKey: findTrailer(d.videos),
-                    seasons: d.number_of_seasons,
-                    languages: d.spoken_languages.map(l => l.name),
-                    platforms: platforms,
-                    watchLink: platforms.length > 0 ? platforms[0].link : null
-                });
-                await show.save();
-                process.stdout.write('.');
+                } else {
+                    process.stdout.write('.');
+                }
             }
         }
     } catch (err) {
@@ -145,13 +176,18 @@ async function importPopularTVShows() {
 }
 
 async function runSeed() {
-    console.log('🚀 Iniciando Seeding...');
+    console.log('🚀 Iniciando Seeding Masivo...');
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Conectado a MongoDB.');
-        for (const genreId of GENRES_TO_FETCH) await importMoviesByGenre(genreId);
+
+        for (const genreId of GENRES_TO_FETCH) {
+            await importMoviesByGenre(genreId);
+        }
+
         await importPopularTVShows();
-        console.log('\n¡Todo listo!');
+
+        console.log('\n\n✅ ¡Base de datos poblada exitosamente!');
         process.exit(0);
     } catch (err) {
         console.error(err);
