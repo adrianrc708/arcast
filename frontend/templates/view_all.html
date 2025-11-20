@@ -7,6 +7,10 @@
     .page-header {
         padding: 40px 40px 20px 40px;
         background: linear-gradient(to bottom, #000000 0%, transparent 100%);
+        min-height: 200px;
+        /* SOLUCIÓN: Elevamos el header por encima del grid */
+        position: relative;
+        z-index: 1000;
     }
 
     .page-title {
@@ -18,69 +22,116 @@
     }
     .page-title span { color: var(--accent); }
 
-    /* BARRA DE FILTROS MODERNA */
+    /* CONTENEDOR DE FILTROS */
     .filters-form {
         display: flex;
-        gap: 15px;
+        gap: 20px;
         flex-wrap: wrap;
         align-items: center;
-        background: rgba(255,255,255,0.05); /* Fondo semi-transparente */
-        padding: 15px 25px;
-        border-radius: 50px; /* Bordes muy redondos */
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.02);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.05);
         backdrop-filter: blur(10px);
     }
 
-    .filter-group {
+    /* --- ESTILOS DEL SELECT PERSONALIZADO --- */
+    .custom-select-wrapper {
         position: relative;
+        width: 220px;
+        user-select: none;
+        font-family: inherit;
+        z-index: 10;
     }
 
-    /* Selectores personalizados */
-    .modern-select {
-        appearance: none;
-        background-color: #1a1a1a;
-        border: 1px solid #444;
-        color: white;
-        padding: 10px 40px 10px 20px;
-        border-radius: 30px;
+    .select-trigger {
+        background: #1a1a1d;
+        color: #ccc;
+        padding: 12px 15px;
         font-size: 0.9rem;
-        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.2s;
-        outline: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        font-weight: 600;
     }
 
-    .modern-select:hover {
-        background-color: #252525;
-        border-color: var(--accent);
+    .select-trigger:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        color: white;
     }
 
-    .modern-select:focus {
-        box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.3);
-        border-color: var(--accent);
-    }
-
-    /* Flechita personalizada para el select */
-    .select-wrapper { position: relative; }
-    .select-wrapper::after {
+    /* Flecha azul automática */
+    .select-trigger::after {
         content: '▼';
-        font-size: 0.7em;
-        color: #888;
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
+        font-size: 0.7rem;
+        margin-left: 10px;
+        transition: transform 0.3s;
+        color: var(--accent);
     }
 
-    .filter-label {
-        font-size: 0.75rem;
-        color: #888;
-        margin-left: 15px;
-        margin-bottom: 4px;
-        display: block;
+    /* Estado abierto */
+    .custom-select-wrapper.open { z-index: 100; }
+
+    .custom-select-wrapper.open .select-trigger {
+        border-color: var(--accent);
+        border-radius: 8px 8px 0 0;
+        background: #222;
+        color: white;
+    }
+
+    .custom-select-wrapper.open .select-trigger::after {
+        transform: rotate(180deg);
+    }
+
+    /* Menú desplegable */
+    .custom-options {
+        position: absolute;
+        top: 100%; left: 0; right: 0;
+        background: #141416;
+        border: 1px solid var(--accent);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8); /* Sombra más fuerte para resaltar sobre las pelis */
+        overflow: hidden;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .custom-select-wrapper.open .custom-options {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* Opciones */
+    .custom-option {
+        padding: 12px 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+        color: #bbb;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .custom-option:hover {
+        background: var(--accent);
+        color: black;
         font-weight: bold;
-        text-transform: uppercase;
+    }
+
+    .custom-option.selected {
+        background: rgba(255,255,255,0.05);
+        color: var(--accent);
+        font-weight: bold;
     }
 
     /* GRID DE RESULTADOS */
@@ -89,6 +140,9 @@
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 30px;
         padding: 40px;
+        /* SOLUCIÓN: Nos aseguramos que el grid esté en una capa inferior */
+        position: relative;
+        z-index: 1;
     }
 
     .media-card {
@@ -116,7 +170,6 @@
         width: 100%; height: 100%; object-fit: cover;
     }
 
-    /* Etiqueta de calidad */
     .quality-tag {
         position: absolute; top: 10px; right: 10px;
         background: rgba(0,0,0,0.8);
@@ -135,7 +188,6 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         margin-bottom: 5px;
         display: block;
-        text-decoration: none;
     }
     .card-title:hover { color: var(--accent); }
 
@@ -144,20 +196,11 @@
     }
 
     .watchlist-btn-full {
-        width: 100%;
-        padding: 10px;
-        background: transparent;
-        border: 1px solid #444;
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
+        width: 100%; padding: 10px; background: transparent;
+        border: 1px solid #444; color: white; border-radius: 6px;
+        cursor: pointer; font-weight: 600; transition: 0.2s;
     }
-    .watchlist-btn-full:hover {
-        background: white;
-        color: black;
-    }
+    .watchlist-btn-full:hover { background: white; color: black; }
 
     .empty-state {
         text-align: center; padding: 60px; color: #666; grid-column: 1 / -1;
@@ -167,45 +210,53 @@
 <div class="page-header">
     <h1 class="page-title">Explorar <span>{{ category|capitalize }}</span></h1>
 
-    <form action="{{ url_for('view_all', category=category) }}" method="GET" class="filters-form">
+    <form action="{{ url_for('view_all', category=category) }}" method="GET" class="filters-form" id="filtersForm">
         {% if current_filters.search %}
             <input type="hidden" name="search" value="{{ current_filters.search }}">
         {% endif %}
 
-        <div class="filter-group">
-            <div class="select-wrapper">
-                <select name="sort" class="modern-select" onchange="this.form.submit()">
-                    <option value="newest" {% if current_filters.sort == 'newest' %}selected{% endif %}>📅 Recientes</option>
-                    <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>⭐ Mejor Valoradas</option>
-                </select>
+        <div class="custom-select-wrapper">
+            <input type="hidden" name="sort" value="{{ current_filters.sort or 'newest' }}">
+            <div class="select-trigger">
+                {% if current_filters.sort == 'rating' %}⭐ Mejor Valoradas
+                {% else %}📅 Recientes{% endif %}
+            </div>
+            <div class="custom-options">
+                <div class="custom-option" data-value="newest">📅 Recientes</div>
+                <div class="custom-option" data-value="rating">⭐ Mejor Valoradas</div>
             </div>
         </div>
 
-        <div class="filter-group">
-            <div class="select-wrapper">
-                <select name="genre" class="modern-select" onchange="this.form.submit()">
-                    <option value="Todas">🎭 Todos los Géneros</option>
-                    <option value="Acción" {% if current_filters.genre == 'Acción' %}selected{% endif %}>Acción</option>
-                    <option value="Comedia" {% if current_filters.genre == 'Comedia' %}selected{% endif %}>Comedia</option>
-                    <option value="Terror" {% if current_filters.genre == 'Terror' %}selected{% endif %}>Terror</option>
-                    <option value="Drama" {% if current_filters.genre == 'Drama' %}selected{% endif %}>Drama</option>
-                    <option value="Ciencia ficción" {% if current_filters.genre == 'Ciencia ficción' %}selected{% endif %}>Ciencia Ficción</option>
-                    <option value="Animación" {% if current_filters.genre == 'Animación' %}selected{% endif %}>Animación</option>
-                </select>
+        <div class="custom-select-wrapper">
+            <input type="hidden" name="genre" value="{{ current_filters.genre or 'Todas' }}">
+            <div class="select-trigger">
+                {{ current_filters.genre if current_filters.genre and current_filters.genre != 'Todas' else '🎭 Todos los Géneros' }}
+            </div>
+            <div class="custom-options">
+                <div class="custom-option" data-value="Todas">🎭 Todos los Géneros</div>
+                <div class="custom-option" data-value="Acción">Acción</div>
+                <div class="custom-option" data-value="Comedia">Comedia</div>
+                <div class="custom-option" data-value="Terror">Terror</div>
+                <div class="custom-option" data-value="Drama">Drama</div>
+                <div class="custom-option" data-value="Ciencia ficción">Ciencia Ficción</div>
+                <div class="custom-option" data-value="Animación">Animación</div>
             </div>
         </div>
 
-        <div class="filter-group">
-            <div class="select-wrapper">
-                <select name="platform" class="modern-select" onchange="this.form.submit()">
-                    <option value="Todas">📺 Todas las Plataformas</option>
-                    <option value="Netflix" {% if current_filters.platform == 'Netflix' %}selected{% endif %}>Netflix</option>
-                    <option value="Disney" {% if current_filters.platform == 'Disney' %}selected{% endif %}>Disney+</option>
-                    <option value="HBO" {% if current_filters.platform == 'HBO' %}selected{% endif %}>HBO Max</option>
-                    <option value="Amazon" {% if current_filters.platform == 'Amazon' %}selected{% endif %}>Amazon Prime</option>
-                </select>
+        <div class="custom-select-wrapper">
+            <input type="hidden" name="platform" value="{{ current_filters.platform or 'Todas' }}">
+            <div class="select-trigger">
+                {{ current_filters.platform if current_filters.platform and current_filters.platform != 'Todas' else '📺 Todas las Plataformas' }}
+            </div>
+            <div class="custom-options">
+                <div class="custom-option" data-value="Todas">📺 Todas las Plataformas</div>
+                <div class="custom-option" data-value="Netflix">Netflix</div>
+                <div class="custom-option" data-value="Disney">Disney+</div>
+                <div class="custom-option" data-value="HBO">HBO Max</div>
+                <div class="custom-option" data-value="Amazon">Amazon Prime</div>
             </div>
         </div>
+
     </form>
 </div>
 
@@ -241,4 +292,37 @@
         </div>
     {% endfor %}
 </div>
+
+<script>
+    document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+        const trigger = wrapper.querySelector('.select-trigger');
+        const options = wrapper.querySelectorAll('.custom-option');
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.custom-select-wrapper').forEach(other => {
+                if(other !== wrapper) other.classList.remove('open');
+            });
+            wrapper.classList.toggle('open');
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                trigger.textContent = option.textContent;
+                hiddenInput.value = option.getAttribute('data-value');
+                wrapper.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                wrapper.classList.remove('open');
+                document.getElementById('filtersForm').submit();
+            });
+        });
+    });
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+            wrapper.classList.remove('open');
+        });
+    });
+</script>
 {% endblock %}
