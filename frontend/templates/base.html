@@ -30,10 +30,20 @@
 
         <div>
             {% if session.get('username') %}
-                <a href="{{ url_for('profile') }}" class="btn btn-outline">
-                    <i class="fas fa-user"></i> {{ session['username'] }}
-                </a>
-                <a href="{{ url_for('logout') }}" class="nav-link" style="font-size:0.8rem; margin-left:10px;">Salir</a>
+                <div class="user-controls">
+
+                    <a href="{{ url_for('profile') }}" class="profile-pill" title="Ir a mi perfil">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="username-text">{{ session['username'] }}</span>
+                    </a>
+
+                    <a href="{{ url_for('logout') }}" class="logout-icon-btn" title="Cerrar Sesión">
+                        <i class="fas fa-power-off"></i>
+                    </a>
+
+                </div>
             {% else %}
                 <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
             {% endif %}

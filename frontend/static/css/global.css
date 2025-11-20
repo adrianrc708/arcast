@@ -201,3 +201,71 @@ nav { display: flex; gap: 25px; align-items: center; }
     color: var(--accent); /* Se pone azul/acento */
     transform: scale(1.1); /* Crece un poquito */
 }
+
+/* =========================================
+   ESTILOS DE USUARIO (HEADER)
+   ========================================= */
+
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Píldora del Perfil */
+.profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05); /* Fondo sutil */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 5px 15px 5px 5px; /* Padding asimétrico para el avatar */
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.profile-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+}
+
+/* Círculo del Avatar (Simulado) */
+.avatar-circle {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), #1e3a8a); /* Gradiente Cyan-Azul */
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.username-text {
+    color: #e5e5e5;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding-right: 5px;
+}
+
+/* Botón de Salir (Power Off) */
+.logout-icon-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    color: #8f9bb3;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.logout-icon-btn:hover {
+    color: #ff4757; /* Rojo neón */
+    background: rgba(255, 71, 87, 0.1);
+    border-color: rgba(255, 71, 87, 0.3);
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.2);
+    transform: rotate(90deg); /* Pequeña animación al pasar el mouse */
+}
