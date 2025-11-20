@@ -10,7 +10,10 @@
 <body>
     <header>
         <div style="display:flex; align-items:center; gap: 30px;">
-            <a href="{{ url_for('index') }}" class="logo">FilmLog</a>
+
+            <a href="{{ url_for('index') }}" class="logo-container">
+                <img src="{{ url_for('static', filename='images/filmlog_logo_header.png') }}" alt="FilmLog" class="logo-img">
+            </a>
 
             <nav>
                 <a href="{{ url_for('index') }}" class="nav-link" style="color:white;">Inicio</a>
@@ -66,34 +69,45 @@
     </div>
 
     <script>
+        // --- LÓGICA DEL BUSCADOR EN VIVO ---
         const searchInput = document.getElementById('searchInput');
         const resultsBox = document.getElementById('searchResults');
         let debounceTimer;
+
+        // Ajusta esto si tu backend corre en otro puerto/url
         const API_BASE = 'http://127.0.0.1:5000/api';
 
         if(searchInput) {
             searchInput.addEventListener('input', function() {
                 const query = this.value.trim();
                 clearTimeout(debounceTimer);
+
                 if (query.length < 2) {
                     resultsBox.classList.remove('active');
                     resultsBox.innerHTML = '';
                     return;
                 }
+
+                // Esperar 300ms antes de hacer la petición
                 debounceTimer = setTimeout(async () => {
                     try {
                         const [resMovies, resTV] = await Promise.all([
                             fetch(`${API_BASE}/movies?search=${query}`),
                             fetch(`${API_BASE}/tvshows?search=${query}`)
                         ]);
+
                         const movies = await resMovies.json();
                         const tvshows = await resTV.json();
                         let combined = [];
+
                         if(Array.isArray(movies)) movies.forEach(m => combined.push({...m, type: 'movie'}));
                         if(Array.isArray(tvshows)) tvshows.forEach(t => combined.push({...t, type: 'tv'}));
+
+                        // Mostrar máx 5 resultados
                         const results = combined.slice(0, 5);
                         renderResults(results);
-                    } catch (err) { console.error(err); }
+
+                    } catch (err) { console.error("Error en búsqueda:", err); }
                 }, 300);
             });
         }
@@ -108,15 +122,25 @@
             items.forEach(item => {
                 const title = item.title || item.name;
                 const year = (item.releaseDate || item.firstAirDate || '').split('-')[0];
+                // Placeholder si no hay poster
                 const poster = item.posterUrl || 'https://via.placeholder.com/40x60';
                 const typeLabel = item.type === 'movie' ? 'Película' : 'Serie';
-                const url = `/movie/${item._id}`;
-                html += `<a href="${url}" class="result-item"><img src="${poster}" class="result-poster"><div class="result-info"><div class="result-title">${title}</div><div class="result-meta"><span class="meta-tag">${typeLabel}</span> ${year}</div></div></a>`;
+                const url = `/movie/${item._id}`; // Ruta al detalle
+
+                html += `
+                <a href="${url}" class="result-item">
+                    <img src="${poster}" class="result-poster" alt="${title}">
+                    <div class="result-info">
+                        <div class="result-title">${title}</div>
+                        <div class="result-meta"><span class="meta-tag">${typeLabel}</span> ${year}</div>
+                    </div>
+                </a>`;
             });
             resultsBox.innerHTML = html;
             resultsBox.classList.add('active');
         }
 
+        // Cerrar buscador al hacer clic fuera
         document.addEventListener('click', (e) => {
             if (document.querySelector('.search-container') && !document.querySelector('.search-container').contains(e.target)) {
                 resultsBox.classList.remove('active');

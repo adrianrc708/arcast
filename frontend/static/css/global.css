@@ -36,14 +36,25 @@ header {
     backdrop-filter: blur(10px);
 }
 
-.logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: 1px;
-    text-transform: uppercase;
+/* Logo (Contenedor para la imagen) */
+.logo-container {
+    display: flex;
+    align-items: center;
 }
 
+.logo-img {
+    height: 45px;
+    width: auto;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+    transition: all 0.3s ease;
+}
+
+.logo-container:hover .logo-img {
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.9));
+    transform: scale(1.05);
+}
+
+/* Menú */
 nav { display: flex; gap: 25px; align-items: center; }
 
 .nav-link {
