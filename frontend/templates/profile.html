@@ -80,13 +80,14 @@
 
                             <a href="{{ url_for('movie_detail', content_id=entry.item._id) }}">
                                 {% if entry.kind == 'TVShow' %} 📺 {% else %} 🎬 {% endif %}
-                                {{ entry.item.title or entry.item.name }}
+                                {{ entry.item.title if entry.item.title else entry.item.name }}
                             </a>
                         </div>
                     {% endif %}
                 {% endfor %}
             {% else %}
-                <div class="icon">+</div><p style="text-align:center;">Your Watchlist is Empty</p>
+                <div class="icon" style="line-height: 55px;">+</div>
+                <p><strong>Your Watchlist is Empty</strong></p>
             {% endif %}
         </div>
     </div>
