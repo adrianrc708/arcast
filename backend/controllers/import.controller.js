@@ -46,10 +46,10 @@ exports.importMovie = async (req, res) => {
             params: {
                 api_key: TMDB_API_KEY,
                 language: 'es-ES',
-                append_to_response: 'videos' // <-- Truco para pedir videos
+                append_to_response: 'videos',
+                include_video_language: 'es,en,null' // <--- AGREGAR ESTO
             }
         });
-
         const movieData = detailRes.data;
 
         // 3. Verificar existencia
@@ -99,7 +99,8 @@ exports.importTVShow = async (req, res) => {
             params: {
                 api_key: TMDB_API_KEY,
                 language: 'es-ES',
-                append_to_response: 'videos'
+                append_to_response: 'videos',
+                include_video_language: 'es,en,null' // <--- AGREGAR ESTO
             }
         });
         const tvData = detailRes.data;

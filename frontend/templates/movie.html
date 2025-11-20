@@ -65,12 +65,23 @@
                             </iframe>
                         </div>
                     {% else %}
-                        <div style="background:#f8f9fa; padding:30px; text-align:center; border-radius:8px; border:1px solid #ddd;">
-                            <p>No tenemos el trailer oficial en nuestra base de datos.</p>
-                            <a href="https://www.youtube.com/results?search_query={{ movie.title }} trailer español" target="_blank"
-                               style="background:#FF0000; color:white; padding:10px 20px; text-decoration:none; border-radius:5px; font-weight:bold;">
-                               ▶ Buscar Trailer en YouTube
-                            </a>
+                        <div style="
+                            position: relative;
+                            width: 100%;
+                            height: 0;
+                            padding-bottom: 56.25%;
+                            background-image: url('{{ movie.posterUrl }}'); /* Fondo borroso del poster */
+                            background-size: cover;
+                            background-position: center;
+                            border-radius: 8px;
+                            overflow: hidden;
+                        ">
+                            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; flex-direction:column;">
+                                <a href="https://www.youtube.com/results?search_query={{ movie.title or movie.name }} trailer español" target="_blank" style="text-decoration:none; color:white; text-align:center;">
+                                    <div style="font-size: 4em; opacity: 0.9;">▶</div>
+                                    <div style="font-weight:bold; margin-top:10px; font-size:1.2em;">Ver Trailer en YouTube</div>
+                                </a>
+                            </div>
                         </div>
                     {% endif %}
                 </div>

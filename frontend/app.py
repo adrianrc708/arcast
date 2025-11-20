@@ -47,9 +47,9 @@ def index():
     action_movies = []
     comedy_movies = []
     horror_movies = []
-    drama_movies = []  # <-- NUEVO
-    scifi_movies = []  # <-- NUEVO
-    anim_movies = []  # <-- NUEVO
+    drama_movies = []
+    scifi_movies = []
+    anim_movies = []
 
     try:
         # 1. Obtener Películas
@@ -57,14 +57,14 @@ def index():
         if resp_mov.status_code == 200:
             movies = resp_mov.json()
 
-            # Filtramos manualmente (limitamos a 12 para que el scroll se vea bien)
-            limit = 12
+            # --- CAMBIO AQUÍ: Limitar a 5 elementos por fila ---
+            limit = 5
             action_movies = [m for m in movies if 'Acción' in m.get('genres', [])][:limit]
             comedy_movies = [m for m in movies if 'Comedia' in m.get('genres', [])][:limit]
             horror_movies = [m for m in movies if 'Terror' in m.get('genres', [])][:limit]
-            drama_movies = [m for m in movies if 'Drama' in m.get('genres', [])][:limit]  # <-- NUEVO
-            scifi_movies = [m for m in movies if 'Ciencia ficción' in m.get('genres', [])][:limit]  # <-- NUEVO
-            anim_movies = [m for m in movies if 'Animación' in m.get('genres', [])][:limit]  # <-- NUEVO
+            drama_movies = [m for m in movies if 'Drama' in m.get('genres', [])][:limit]
+            scifi_movies = [m for m in movies if 'Ciencia ficción' in m.get('genres', [])][:limit]
+            anim_movies = [m for m in movies if 'Animación' in m.get('genres', [])][:limit]
 
         # 2. Obtener Series
         resp_tv = requests.get(f"{BACKEND_API_URL}/tvshows")
@@ -75,20 +75,20 @@ def index():
         all_content = movies + tv_shows
         top_rated = [item for item in all_content if item.get('voteAverage') and item.get('voteAverage') > 7.5]
         top_rated.sort(key=lambda x: x['voteAverage'], reverse=True)
-        top_rated = top_rated[:12]  # Limitamos también
+        top_rated = top_rated[:limit]  # También limitamos a 5
 
     except requests.exceptions.ConnectionError:
         flash("Error de conexión", "error")
 
     return render_template('index.html',
                            top_rated=top_rated,
-                           tv_shows=tv_shows[:12],
+                           tv_shows=tv_shows[:limit],  # Limitamos series a 5
                            action_movies=action_movies,
                            comedy_movies=comedy_movies,
                            horror_movies=horror_movies,
-                           drama_movies=drama_movies,  # <-- NUEVO
-                           scifi_movies=scifi_movies,  # <-- NUEVO
-                           anim_movies=anim_movies)  # <-- NUEVO
+                           drama_movies=drama_movies,
+                           scifi_movies=scifi_movies,
+                           anim_movies=anim_movies)
 
 # --- NUEVA RUTA: Ver Todo con Filtros ---
 @app.route('/view_all/<category>')
