@@ -25,7 +25,6 @@ ul { list-style: none; padding: 0; margin: 0; }
    ========================================= */
 header {
     background-color: rgba(15, 16, 20, 0.95);
-    /* CAMBIO CLAVE: Padding 0 arriba/abajo, Altura Fija */
     padding: 0 30px;
     height: 80px;
     display: flex;
@@ -33,7 +32,8 @@ header {
     justify-content: space-between;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    /* ESTE ES EL CAMBIO CLAVE: Un z-index altísimo para que gane a todo el contenido */
+    z-index: 9999;
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(10px);
 }
@@ -72,9 +72,10 @@ nav { display: flex; gap: 25px; align-items: center; }
    ========================================= */
 .search-container {
     position: relative;
-    width: 280px; /* Ancho inicial */
+    width: 280px;
     transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    z-index: 2000;
+    /* El contenedor del buscador debe estar en su propia capa alta dentro del header */
+    z-index: 10000;
 }
 
 .search-container:focus-within {
@@ -140,8 +141,8 @@ nav { display: flex; gap: 25px; align-items: center; }
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 16px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
-    z-index: 2001;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.8); /* Sombra más fuerte para separar visualmente */
+    z-index: 10001; /* Encima del propio container */
     overflow: hidden;
     display: none;
     flex-direction: column;

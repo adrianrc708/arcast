@@ -8,9 +8,8 @@
         padding: 40px 40px 20px 40px;
         background: linear-gradient(to bottom, #000000 0%, transparent 100%);
         min-height: 200px;
-        /* SOLUCIÓN: Elevamos el header por encima del grid */
         position: relative;
-        z-index: 1000;
+        z-index: 500; /* CAMBIO: Bajar de 1000 a 500 para que el menú principal (9999) siempre gane */
     }
 
     .page-title {
