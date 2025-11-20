@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response
 import requests
 import os
-import random  # <--- IMPORTANTE: Para la aleatoriedad
+import random  # <--- IMPORTANTE: Para que cambie cada vez
 from functools import wraps
 
 app = Flask(__name__)
@@ -54,17 +54,15 @@ def index():
         if resp_mov.status_code == 200:
             movies = resp_mov.json()
 
-            # --- LÓGICA ALEATORIA PARA EL CARRUSEL (HÉROE) ---
-            # Filtramos películas con buena imagen y buen rating
+            # --- CARRUSEL ALEATORIO ---
+            # 1. Filtramos pelis que tengan imagen de fondo y buen rating
             candidates = [m for m in movies if m.get('voteAverage', 0) > 6.0 and m.get('backdropUrl')]
-
-            # ¡AQUÍ ESTÁ LA MAGIA! Mezclamos la lista al azar
+            # 2. Las mezclamos al azar
             random.shuffle(candidates)
-
-            # Tomamos las primeras 5 de la lista mezclada
+            # 3. Tomamos las 5 primeras
             hero_movies = candidates[:5]
 
-            # Filtros de filas (Limitados a 5)
+            # Filtros de filas (Limitados a 5 para el diseño)
             limit = 5
             action_movies = [m for m in movies if 'Acción' in m.get('genres', [])][:limit]
             comedy_movies = [m for m in movies if 'Comedia' in m.get('genres', [])][:limit]
@@ -73,7 +71,7 @@ def index():
             scifi_movies = [m for m in movies if 'Ciencia ficción' in m.get('genres', [])][:limit]
             anim_movies = [m for m in movies if 'Animación' in m.get('genres', [])][:limit]
 
-            # Top Rated General (Este sí lo mantenemos ordenado por calidad)
+            # Top Rated (Ordenado por calidad)
             top_rated = sorted(movies, key=lambda x: x.get('voteAverage', 0), reverse=True)[:limit]
 
         # 2. Obtener Series
