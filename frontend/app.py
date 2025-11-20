@@ -133,73 +133,81 @@ def view_all(category):
 
 # ... (imports y configuraciones anteriores siguen igual) ...
 
+# ... (imports y demás código anterior igual) ...
+
 @app.route('/movie/<content_id>', methods=['GET'])
 def movie_detail(content_id):
     """Detalle de película O serie"""
     content = None
+    content_type = 'movie'  # Por defecto
 
-    # 1. Intentar buscar en la colección de PELÍCULAS
+    # 1. Intentar buscar en PELÍCULAS
     try:
         response = requests.get(f"{BACKEND_API_URL}/movies/{content_id}")
         if response.status_code == 200:
             content = response.json()
+            content_type = 'movie'  # Es una película
     except requests.exceptions.ConnectionError:
         return "Error conectando al backend", 500
 
-    # 2. Si no se encontró como película, buscar en SERIES DE TV
+    # 2. Si no, buscar en SERIES
     if not content:
         try:
             response = requests.get(f"{BACKEND_API_URL}/tvshows/{content_id}")
             if response.status_code == 200:
                 content = response.json()
-                # <--- TRUCO: Normalizamos los datos para que la plantilla funcione igual
                 content['title'] = content.get('name')
                 content['releaseDate'] = content.get('firstAirDate')
+                content_type = 'tv'  # Es una serie
         except:
             pass
 
-    # 3. Si no se encontró en ninguno de los dos
     if not content:
-        return "Contenido no encontrado (¿Seguro que importaste los datos?)", 404
+        return "Contenido no encontrado", 404
 
-    # 4. Obtener reseñas (las reseñas funcionan por ID, así que sirve para ambos)
     reviews = []
     try:
         reviews_response = requests.get(f"{BACKEND_API_URL}/reviews/{content_id}")
         if reviews_response.status_code == 200:
             reviews = reviews_response.json()
-    except requests.exceptions.ConnectionError:
-        print("Error: No se pudo conectar al backend por las reseñas.")
+    except:
+        pass
 
-    # Pasamos 'content' como 'movie' para que la plantilla movie.html no se rompa
-    return render_template('movie.html', movie=content, movie_id=content_id, reviews=reviews)
-
-
-# ... (El resto de rutas: add_review, import, etc. siguen igual) ...
+    # Pasamos 'content_type' a la plantilla
+    return render_template('movie.html', movie=content, movie_id=content_id, reviews=reviews, content_type=content_type)
 
 
 @app.route('/movie/<movie_id>/add_review', methods=['POST'])
 def add_review(movie_id):
-    # ... (Esta función no cambia) ...
-    # (El resto del código de esta función es idéntico)
+    """Procesar formulario para crear reseña"""
+
     data = {
         "movieId": movie_id,
         "movieTitle": request.form.get('movieTitle'),
         "rating": int(request.form.get('rating')),
-        "text": request.form.get('text')
+        "text": request.form.get('text'),
+        "contentType": request.form.get('contentType')  # Enviamos el tipo al backend
     }
+
     if not session.get('token'):
         data["username"] = request.form.get('username', 'Anónimo')
+
     try:
         headers = get_auth_headers()
         response = requests.post(f"{BACKEND_API_URL}/reviews", json=data, headers=headers)
-        if response.status_code != 201:
-            flash(f"Error al enviar reseña: {response.json().get('message')}", "error")
-    except requests.exceptions.ConnectionError:
-        print("Error: No se pudo enviar la reseña al backend.")
-        flash("Error de conexión al enviar reseña.", "error")
-    return redirect(url_for('movie_detail', movie_id=movie_id))
 
+        if response.status_code != 201:
+            flash(f"Error: {response.json().get('message')}", "error")
+    except requests.exceptions.ConnectionError:
+        flash("Error de conexión.", "error")
+
+    # --- CORRECCIÓN DEL ERROR AQUÍ ---
+    # Antes decía: movie_id=movie_id (Incorrecto)
+    # Ahora dice: content_id=movie_id (Correcto, coincide con la ruta @app.route('/movie/<content_id>'))
+    return redirect(url_for('movie_detail', content_id=movie_id))
+
+
+# ... (resto del archivo igual) ...
 
 # --- MODIFICADO: De 'add_movie' a 'import_movie' ---
 @app.route('/import_movie', methods=['POST'])
@@ -365,25 +373,69 @@ def profile():
         return redirect(url_for('index'))
 
 
+# ...
+
+# --- MODIFICADO: Agregar a Watchlist (Recibe contentType) ---
 @app.route('/add_to_watchlist', methods=['POST'])
 def add_to_watchlist():
-    # ... (sin cambios) ...
     if not session.get('token'):
-        flash('Debes iniciar sesión para agregar a tu watchlist.', 'error')
+        flash('Debes iniciar sesión.', 'error')
         return redirect(url_for('login'))
+
     movie_id = request.form.get('movieId')
+    content_type = request.form.get('contentType', 'movie')  # Default a movie si no se envía
+
     try:
         headers = get_auth_headers()
-        data = {"movieId": movie_id}
+        # Enviamos contentType ('movie' o 'tv')
+        data = {"movieId": movie_id, "contentType": content_type}
         response = requests.post(f"{BACKEND_API_URL}/user/me/watchlist", json=data, headers=headers)
+
         if response.status_code == 200:
-            flash('Película agregada a tu watchlist.', 'success')
+            flash('Agregado a tu watchlist.', 'success')
+        elif response.status_code == 400:
+            flash('Ya está en tu watchlist.', 'error')
         else:
             flash(f"Error: {response.json().get('message')}", 'error')
+
     except requests.exceptions.ConnectionError:
         flash("Error de conexión.", "error")
-    return redirect(url_for('index'))
 
+    # Regresar a la misma página
+    return redirect(request.referrer or url_for('index'))
+
+
+# --- NUEVA RUTA: Eliminar de Watchlist ---
+@app.route('/remove_from_watchlist/<item_id>', methods=['POST'])
+def remove_from_watchlist(item_id):
+    if not session.get('token'): return redirect(url_for('login'))
+
+    try:
+        headers = get_auth_headers()
+        requests.delete(f"{BACKEND_API_URL}/user/me/watchlist/{item_id}", headers=headers)
+        flash('Eliminado de la watchlist.', 'success')
+    except:
+        flash("Error al eliminar.", "error")
+
+    return redirect(url_for('profile'))
+
+
+# --- NUEVA RUTA: Eliminar Reseña ---
+@app.route('/delete_review/<review_id>', methods=['POST'])
+def delete_review(review_id):
+    if not session.get('token'): return redirect(url_for('login'))
+
+    try:
+        headers = get_auth_headers()
+        requests.delete(f"{BACKEND_API_URL}/reviews/{review_id}", headers=headers)
+        flash('Reseña eliminada.', 'success')
+    except:
+        flash("Error al eliminar reseña.", "error")
+
+    return redirect(url_for('profile'))
+
+
+# ...
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

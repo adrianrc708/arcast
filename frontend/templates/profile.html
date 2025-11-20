@@ -87,7 +87,11 @@
         text-align: left;
     }
     .item-list a { text-decoration: none; color: #007bff; font-weight: bold; }
-
+    .btn-delete {
+        background: #dc3545; color: white; border: none; padding: 4px 8px;
+        border-radius: 4px; cursor: pointer; font-size: 0.8em; float: right;
+    }
+    .btn-delete:hover { background: #a71d2a; }
 </style>
 
 <div class="profile-layout">
@@ -107,26 +111,42 @@
 
         <div class="profile-section">
             <h3>My Movie Ratings</h3>
-            {% if my_reviews %}
-                {% for review in my_reviews %}
+            {% set ns = namespace(found=false) %}
+            {% for review in my_reviews %}
+                {% if review.contentType == 'movie' or not review.contentType %} {# Compatible con reseñas viejas #}
+                    {% set ns.found = true %}
                     <div class="item-list">
                         <strong>{{ review.movieTitle }}</strong> - ({{ review.rating }}/5)
                         <p>{{ review.text }}</p>
                     </div>
-                {% endfor %}
-            {% else %}
+                {% endif %}
+            {% endfor %}
+
+            {% if not ns.found %}
                 <div class="icon">★</div>
                 <p><strong>No Movie Ratings Yet</strong></p>
-                <p>Rate each Movie you watched by using a 5 star scale to share your thoughts and reaction.</p>
+                <p>Rate each Movie you watched...</p>
             {% endif %}
         </div>
 
         <div class="profile-section">
             <h3>My TV Ratings</h3>
-            <div class="icon">★</div>
-            <p><strong>No TV Ratings Yet</strong></p>
-            <p>Rate each TV show you watched by using a 5 star scale to share your thoughts and reaction.</p>
-            <small>(Esta funcionalidad aún no está implementada)</small>
+            {% set ns_tv = namespace(found=false) %}
+            {% for review in my_reviews %}
+                {% if review.contentType == 'tv' %}
+                    {% set ns_tv.found = true %}
+                    <div class="item-list">
+                        <strong>{{ review.movieTitle }}</strong> - ({{ review.rating }}/5)
+                        <p>{{ review.text }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% if not ns_tv.found %}
+                <div class="icon">★</div>
+                <p><strong>No TV Ratings Yet</strong></p>
+                <p>Rate each TV show you watched...</p>
+            {% endif %}
         </div>
 
         <div class="profile-section">
@@ -135,16 +155,79 @@
                 {% for movie in my_watchlist %}
                     <div class="item-list">
                         <a href="{{ url_for('movie_detail', content_id=movie._id) }}">
-                            {{ movie.title }}
+                            {{ movie.title or movie.name }}
                         </a>
                     </div>
                 {% endfor %}
             {% else %}
                 <div class="icon" style="line-height: 55px;">+</div>
                 <p><strong>Your Watchlist is Empty</strong></p>
-                <p>Add movies and shows to your Watchlist to keep track of what you want to watch.</p>
             {% endif %}
         </div>
+
+        <div class="profile-section">
+            <h3>My Movie Ratings</h3>
+            {% set ns = namespace(found=false) %}
+            {% for review in my_reviews %}
+                {% if review.contentType == 'movie' %}
+                    {% set ns.found = true %}
+                    <div class="item-list">
+                        <form action="{{ url_for('delete_review', review_id=review._id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-delete" onclick="return confirm('¿Borrar reseña?')">X</button>
+                        </form>
+
+                        <a href="{{ url_for('movie_detail', content_id=review.movieId) }}">
+                            <strong>{{ review.movieTitle }}</strong>
+                        </a>
+                        - ({{ review.rating }}/5)
+                        <p>{{ review.text }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% if not ns.found %}<p>No Movie Ratings Yet</p>{% endif %}
+        </div>
+
+        <div class="profile-section">
+            <h3>My TV Ratings</h3>
+            {% set ns_tv = namespace(found=false) %}
+            {% for review in my_reviews %}
+                {% if review.contentType == 'tv' %}
+                    {% set ns_tv.found = true %}
+                    <div class="item-list">
+                        <form action="{{ url_for('delete_review', review_id=review._id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-delete" onclick="return confirm('¿Borrar reseña?')">X</button>
+                        </form>
+                        <a href="{{ url_for('movie_detail', content_id=review.movieId) }}">
+                            <strong>{{ review.movieTitle }}</strong>
+                        </a>
+                        - ({{ review.rating }}/5)
+                        <p>{{ review.text }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% if not ns_tv.found %}<p>No TV Ratings Yet</p>{% endif %}
+        </div>
+
+        <div class="profile-section">
+            <h3>My Watchlist</h3>
+            {% if my_watchlist %}
+                {% for entry in my_watchlist %}
+                    <div class="item-list">
+                        <form action="{{ url_for('remove_from_watchlist', item_id=entry.item._id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-delete">Quitar</button>
+                        </form>
+
+                        <a href="{{ url_for('movie_detail', content_id=entry.item._id) }}">
+                            {% if entry.kind == 'TVShow' %} 📺 {% else %} 🎬 {% endif %}
+                            {{ entry.item.title or entry.item.name }}
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Your Watchlist is Empty</p>
+            {% endif %}
+        </div>
+    </div>
     </div>
 </div>
 {% endblock %}

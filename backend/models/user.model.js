@@ -7,10 +7,10 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     date: { type: Date, default: Date.now },
 
-    // --- NUEVO CAMPO ---
+    // --- MODIFICADO: Referencia Dinámica ---
     watchlist: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Movie'
+        item: { type: Schema.Types.ObjectId, refPath: 'watchlist.kind' },
+        kind: { type: String, required: true, enum: ['Movie', 'TVShow'] }
     }]
 });
 
