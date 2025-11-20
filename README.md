@@ -1,42 +1,39 @@
-# Mini Plataforma de Reseñas de Películas
+# 🎬 FilmLog - Puesta en Marcha
 
-Proyecto full stack (Node.js/Express + Python/Flask) con MongoDB.
+Guía rápida para ejecutar el proyecto. Se requieren **Node.js** y **Python** instalados.
 
-## ¿Cómo ejecutar el proyecto? (Windows)
+## 1. Backend (Terminal 1)
 
-Necesitarás tener dos terminales abiertas (ej. una en WebStorm y otra en PyCharm).
+Entra a la carpeta, instala dependencias y configura el entorno:
 
-### Backend (Node.js)
+```bash
+cd backend
+npm install
+```
+Crea un archivo .env (puedes copiar .env.example).
 
-1.  **Configurar:** Crea el archivo `backend/.env` (puedes copiar `backend/.env.example`) y pega tu `MONGO_URI` de MongoDB Atlas.
-2.  **Instalar:** Abre una terminal en `backend/` y ejecuta:
-    ```bash
-    npm install express mongoose dotenv cors
-    ```
-3.  **Ejecutar:** En esa misma terminal, corre el servidor:
-    ```bash
-    node server.js
-    ```
-*(El backend quedará corriendo en el puerto 5000)*
+Define tus variables: MONGO_URI (Atlas), TMDB_API_KEY y JWT_SECRET.
 
-### Frontend (Python)
+Una vez configurado, ejecuta estos comandos en orden:
 
-1.  **Configurar:** Abre una segunda terminal en `frontend/` y ejecuta estos dos comandos para crear y activar el entorno virtual:
-    ```bash
-    py -m venv venv
-    .\venv\Scripts\Activate
-    ```
-2.  **Instalar:** Con el `(venv)` activo, ejecuta:
-    ```bash
-    pip install Flask requests
-    ```
-3.  **Ejecutar:** En esa misma terminal, corre la app:
-    ```bash
-    py app.py
-    ```
-*(El frontend quedará corriendo en el puerto 8000)*
+```bash
+node seed.js    # 1. Carga las películas y series a la BD
+node server.js  # 2. Inicia el servidor (Puerto 5000)
+```
 
----
-**En resumen:** Configura el `.env` del backend. Luego, abre dos terminales: una para ejecutar `node server.js` (backend) y otra (con el `venv` activado) para ejecutar `py app.py` (frontend).
+## 2. Frontend (Terminal 2)
 
-**Abre `http://127.0.0.1:8000` en tu navegador.**
+Abre una nueva terminal, entra a la carpeta y prepara el entorno virtual:
+
+```bash
+cd frontend
+python -m venv venv
+.\venv\Scripts\activate   # En Windows
+# source venv/bin/activate  # En Mac/Linux
+```
+
+Instala las librerías y ejecuta la aplicación:
+```bash
+pip install Flask requests
+python app.py
+```
