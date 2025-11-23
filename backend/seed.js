@@ -11,9 +11,13 @@ const TMDB_IMG_URL = 'https://image.tmdb.org/t/p/w500';
 const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
 // GÉNEROS A IMPORTAR
-const GENRES_TO_FETCH = [28, 35, 27, 18, 878, 16];
+// SE HA ELIMINADO EL ID 18 (Drama)
+const GENRES_TO_FETCH = [28, 35, 27, 878, 16];
 // CANTIDAD DE PÁGINAS A RECORRER POR GÉNERO/CATEGORÍA (Aumenta este número para más datos)
 const PAGES_TO_FETCH = 5;
+
+// ID del género Documental (ID 99).
+const GENRES_TO_EXCLUDE = [99];
 
 // --- HELPERS ---
 const findTrailer = (videos) => {
@@ -63,6 +67,14 @@ async function importMoviesByGenre(genreId) {
                 params: {
                     api_key: TMDB_API_KEY,
                     language: 'es-ES',
+                    include_adult: 'false',
+
+                    // FILTRO: Exigir un mínimo de votos (para filtrar contenido de nicho)
+                    'vote_count.gte': 50,
+
+                    // FILTRO: Excluir géneros no deseados (Documental)
+                    without_genres: GENRES_TO_EXCLUDE.join(','),
+
                     with_genres: genreId,
                     sort_by: 'popularity.desc',
                     page: page // Paginación dinámica
@@ -126,6 +138,11 @@ async function importPopularTVShows() {
                 params: {
                     api_key: TMDB_API_KEY,
                     language: 'es-ES',
+                    include_adult: 'false',
+
+                    // FILTRO: Exigir un mínimo de votos (50)
+                    'vote_count.gte': 50,
+
                     page: page
                 }
             });
@@ -180,6 +197,11 @@ async function runSeed() {
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('Conectado a MongoDB.');
+
+        // ----------------------------------------------------
+        // RECUERDA: Eliminar colecciones 'movies' y 'tvshows' de Atlas
+        // antes de correr este script para que los cambios sean efectivos.
+        // ----------------------------------------------------
 
         for (const genreId of GENRES_TO_FETCH) {
             await importMoviesByGenre(genreId);
