@@ -6,7 +6,7 @@ from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'supersecreto'
-BACKEND_API_URL = os.environ.get('BACKEND_API_URL', 'http://127.0.0.1:5000/api')
+BACKEND_API_URL = os.environ.get('BACKEND_API_URL', 'http://127.0.0.1:5001/api')
 
 
 def no_cache(f):
@@ -328,4 +328,4 @@ def delete_review(review_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8001)
